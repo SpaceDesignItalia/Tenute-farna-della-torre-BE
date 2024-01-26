@@ -2,7 +2,10 @@ const express = require("express");
 const router = express.Router();
 
 const e = require("express");
-const { getProducts, getProductById } = require("../Controllers/Products");
+const {
+  getProducts,
+  getProductById,
+} = require("../Controllers/ProductController");
 
 const productRoutes = (db) => {
   // Funzione per ottenere tutti i prodotti dal database
