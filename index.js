@@ -16,11 +16,7 @@ const db = require("./configs/Database");
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://www.aziendaagricolabianco.com",
-      "https://admin.aziendaagricolabianco.com",
-    ],
+    origin: "*",
     credentials: true,
   })
 );

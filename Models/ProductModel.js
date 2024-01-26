@@ -91,7 +91,63 @@ class Product {
     });
   }
 
-  // Altre operazioni CRUD per il modello del prodotto
+  static createProduct(db, newProduct, newProductPhoto) {
+    console.log(newProductPhoto);
+    return new Promise((resolve, reject) => {
+      // Query per inserire il nuovo prodotto
+      const insertProductQuery =
+        "INSERT INTO Product (productName, productDescription, productAmount, unitPrice) VALUES (?, ?, ?, ?)";
+
+      console.log(newProduct);
+      db.query(
+        insertProductQuery,
+        [
+          newProduct.productName,
+          newProduct.productDescription,
+          newProduct.productAmount,
+          newProduct.unitPrice,
+        ],
+        (err, result) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+
+          // Verifica se il prodotto è stato inserito correttamente
+          if (result.affectedRows > 0) {
+            // ID del nuovo prodotto inserito
+            const newProductId = result.insertId;
+
+            // Query per inserire l'immagine del prodotto nella tabella productImage
+            const insertImageQuery =
+              "INSERT INTO productImage (idProduct, productImagePath) VALUES (?, ?)";
+
+            newProductPhoto.forEach((photo) => {
+              db.query(
+                insertImageQuery,
+                [newProductId, photo.filename],
+                (imageErr, imageResult) => {
+                  if (imageErr) {
+                    reject(imageErr);
+                    return;
+                  }
+
+                  // Verifica se l'immagine è stata inserita correttamente
+                  if (imageResult.affectedRows > 0) {
+                    resolve(true); // Prodotto e immagine inseriti con successo
+                  } else {
+                    resolve(false); // Nessun record inserito per l'immagine
+                  }
+                }
+              );
+            });
+          } else {
+            resolve(false); // Nessun record inserito per il prodotto
+          }
+        }
+      );
+    });
+  }
 }
 
 module.exports = Product;
