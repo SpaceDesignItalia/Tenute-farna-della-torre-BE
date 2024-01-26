@@ -6,21 +6,13 @@ const cookieParser = require("cookie-parser");
 const https = require("https");
 const fs = require("fs");
 
-const createAuthRoutes = require("./Routes/Auth");
 const createProductRoutes = require("./Routes/Products");
-const createEcommerceRoutes = require("./Routes/Ecommerce");
-
-const mysql = require("mysql");
-const db = mysql.createPool({
-  host: "localhost",
-  user: "ecommerce",
-  password: "2Is79nq_7",
-  database: "ecommercebianco",
-});
 
 const app = express();
 app.use(express.static("public"));
 const PORT = 3000;
+
+const db = require("./configs/Database");
 
 app.use(
   cors({
@@ -46,26 +38,20 @@ app.use(
 );
 app.use(cookieParser());
 
-const authRoutes = createAuthRoutes(db);
-app.use("/Auth", authRoutes);
-
 const productRoutes = createProductRoutes(db);
 app.use("/Products", productRoutes);
 
-const ecommerceRoutes = createEcommerceRoutes(db);
-app.use("/Ecommerce", ecommerceRoutes);
-
 // Configura l'opzione per HTTPS
-const options = {
+/* const options = {
   key: fs.readFileSync("SSL/privatekey.key"),
   cert: fs.readFileSync("SSL/certificato.pem"),
-};
+}; */
 
 // Crea un server HTTPS
-const server = https.createServer(options, app);
+/* const server = https.createServer(options, app); */
 
 // Avvia il server su HTTPS
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(
     `Server Express in ascolto sulla porta ${PORT} in modalità HTTPS`
   );
