@@ -6,7 +6,6 @@ const cookieParser = require("cookie-parser");
 const https = require("https");
 const fs = require("fs");
 
-const createAuthRoutes = require("./Routes/Auth");
 const createProductRoutes = require("./Routes/Products");
 
 const app = express();
@@ -38,9 +37,6 @@ app.use(
   })
 );
 app.use(cookieParser());
-
-const authRoutes = createAuthRoutes(db);
-app.use("/Auth", authRoutes);
 
 const productRoutes = createProductRoutes(db);
 app.use("/Products", productRoutes);
