@@ -91,14 +91,50 @@ class Product {
     });
   }
 
+  static findByName(db, { name }) {
+    return new Promise((resolve, reject) => {
+      const query = "SELECT * FROM Product WHERE productName LIKE ?";
+      db.query(query, [`%${name}%`], (err, res) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        if (res.length === 0) {
+          resolve(null);
+          return;
+        }
+
+        const products = res.map((product) => {
+          const {
+            idProduct,
+            productName,
+            productDescription,
+            productAmount,
+            unitPrice,
+            isDiscount,
+          } = product;
+
+          return new Product(
+            idProduct,
+            productName,
+            productDescription,
+            productAmount,
+            unitPrice,
+            isDiscount
+          );
+        });
+
+        resolve(products);
+      });
+    });
+  }
+
   static createProduct(db, newProduct, newProductPhoto) {
-    console.log(newProductPhoto);
     return new Promise((resolve, reject) => {
       // Query per inserire il nuovo prodotto
       const insertProductQuery =
         "INSERT INTO Product (productName, productDescription, productAmount, unitPrice) VALUES (?, ?, ?, ?)";
 
-      console.log(newProduct);
       db.query(
         insertProductQuery,
         [

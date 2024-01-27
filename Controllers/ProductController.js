@@ -33,6 +33,22 @@ const getProductById = async (req, res, db) => {
   }
 };
 
+const getProductByName = async (req, res, db) => {
+  const name = req.params; // Ottengo il nome del prodotto dalla richiesta
+
+  try {
+    const product = await Product.findByName(db, name); // Chiamata al metodo statico findByName del modello Product
+    if (!product) {
+      // Se non c'è un prodotto con quel nome, restituisco un errore
+      return res.status(404).json({ error: "Nessun prodotto trovato" });
+    }
+    return res.status(200).json(product); // Altrimenti restituisco il prodotto
+  } catch (error) {
+    console.error("Errore durante la ricerca del prodotto:", error); // Se c'è un errore, lo stampo e restituisco un errore 500
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
 const createProduct = async (req, res, db) => {
   const newProduct = req.body;
   const newProductPhoto = req.files;
@@ -56,5 +72,6 @@ const createProduct = async (req, res, db) => {
 module.exports = {
   getProducts,
   getProductById,
+  getProductByName,
   createProduct,
 };

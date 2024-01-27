@@ -16,6 +16,7 @@ const upload = multer({ storage: storage });
 const {
   getProducts,
   getProductById,
+  getProductByName,
   createProduct,
 } = require("../Controllers/ProductController");
 
@@ -27,6 +28,10 @@ const productRoutes = (db) => {
 
   router.get("/GetProductById/:id", (req, res) => {
     getProductById(req, res, db);
+  });
+
+  router.get("/GetProductByName/:name", (req, res) => {
+    getProductByName(req, res, db);
   });
 
   // Route per la creazione di un nuovo prodotto
