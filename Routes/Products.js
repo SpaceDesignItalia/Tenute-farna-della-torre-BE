@@ -17,7 +17,10 @@ const {
   getProducts,
   getProductById,
   getProductByName,
+  getProductByNameAndId,
+  getProductImagesById,
   createProduct,
+  deleteProduct,
 } = require("../Controllers/ProductController");
 
 const productRoutes = (db) => {
@@ -34,9 +37,22 @@ const productRoutes = (db) => {
     getProductByName(req, res, db);
   });
 
+  router.get("/GetProductByNameAndId/:id/:name", (req, res) => {
+    getProductByNameAndId(req, res, db);
+  });
+
+  router.get("/GetProductImagesById/:id", (req, res) => {
+    getProductImagesById(req, res, db);
+  });
+
   // Route per la creazione di un nuovo prodotto
   router.post("/CreateProduct", upload.any(), (req, res) => {
     createProduct(req, res, db);
+  });
+
+  //Route per l'eliminazione di un prodotto
+  router.delete("/DeleteProduct/:id", (req, res) => {
+    deleteProduct(req, res, db);
   });
 
   return router;

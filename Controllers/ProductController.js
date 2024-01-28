@@ -49,6 +49,41 @@ const getProductByName = async (req, res, db) => {
   }
 };
 
+const getProductByNameAndId = async (req, res, db) => {
+  const name = req.params.name; // Ottengo il nome del prodotto dalla richiesta
+  const id = req.params.id; // Ottengo l'id del prodotto dalla richiesta
+
+  try {
+    const product = await Product.findByNameAndId(db, name, id); // Chiamata al metodo statico findByName del modello Product
+
+    if (!product) {
+      // Se non c'è un prodotto con quel nome, restituisco un errore
+      return res.status(404).json({ error: "Nessun prodotto trovato" });
+    }
+    return res.status(200).json(product); // Altrimenti restituisco il prodotto
+  } catch (error) {
+    console.error("Errore durante la ricerca del prodotto:", error); // Se c'è un errore, lo stampo e restituisco un errore 500
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
+const getProductImagesById = async (req, res, db) => {
+  const id = req.params.id; // Ottengo l'id del prodotto dalla richiesta
+
+  try {
+    const images = await Product.findPhotosById(db, id); // Chiamata al metodo statico getImagesById del modello Product
+
+    if (!images) {
+      // Se non ci sono immagini per quel prodotto, restituisco un errore
+      return res.status(404).json({ error: "Nessuna immagine trovata" });
+    }
+    return res.status(200).json(images); // Altrimenti restituisco le immagini
+  } catch (error) {
+    console.error("Errore durante la ricerca delle immagini:", error); // Se c'è un errore, lo stampo e restituisco un errore 500
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
 const createProduct = async (req, res, db) => {
   const newProduct = req.body;
   const newProductPhoto = req.files;
@@ -69,9 +104,34 @@ const createProduct = async (req, res, db) => {
   }
 };
 
+const deleteProduct = async (req, res, db) => {
+  const id = req.params.id; // Ottengo l'id del prodotto dalla richiesta
+
+  try {
+    // Chiamata alla funzione deleteProduct del modello Product
+    const result = await Product.deleteProduct(db, id);
+
+    // Verifica se il prodotto è stato eliminato con successo
+    if (result) {
+      return res
+        .status(200)
+        .json({ message: "Prodotto eliminato con successo" });
+    } else {
+      return res
+        .status(500)
+        .json({ error: "Impossibile eliminare il prodotto" });
+    }
+  } catch (error) {
+    console.error("Errore durante l'eliminazione del prodotto:", error);
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
 module.exports = {
   getProducts,
   getProductById,
   getProductByName,
+  getProductByNameAndId,
+  getProductImagesById,
   createProduct,
+  deleteProduct,
 };

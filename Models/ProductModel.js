@@ -1,4 +1,8 @@
 // productModel.js
+
+const fs = require("fs");
+const path = require("path");
+
 class Product {
   constructor(
     idProduct,
@@ -129,6 +133,73 @@ class Product {
     });
   }
 
+  static findByNameAndId(db, name, id) {
+    return new Promise((resolve, reject) => {
+      const query =
+        "SELECT * FROM product WHERE productName LIKE ? AND idProduct = ?";
+      db.query(query, [name, id], (err, res) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        if (res.length === 0) {
+          resolve(null);
+          return;
+        }
+
+        const products = res.map((product) => {
+          const {
+            idProduct,
+            productName,
+            productDescription,
+            productAmount,
+            unitPrice,
+            isDiscount,
+          } = product;
+
+          return new Product(
+            idProduct,
+            productName,
+            productDescription,
+            productAmount,
+            unitPrice,
+            isDiscount
+          );
+        });
+
+        resolve(products);
+      });
+    });
+  }
+
+  static findPhotosById(db, id) {
+    return new Promise((resolve, reject) => {
+      const query = "SELECT * FROM productImage WHERE idProduct = ?";
+      db.query(query, [id], (err, res) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        if (res.length === 0) {
+          resolve(null);
+          return;
+        }
+
+        const photos = res.map((photo) => {
+          const { idProductImage, idProduct, productImagePath } = photo;
+
+          return {
+            idProductImage,
+            idProduct,
+            productImagePath,
+          };
+        });
+
+        resolve(photos);
+      });
+    });
+  }
+
   static createProduct(db, newProduct, newProductPhoto) {
     return new Promise((resolve, reject) => {
       // Query per inserire il nuovo prodotto
@@ -182,6 +253,50 @@ class Product {
           }
         }
       );
+    });
+  }
+
+  static deleteProduct(db, id) {
+    return new Promise((resolve, reject) => {
+      const getProductPhotosQuery =
+        "SELECT productImagePath FROM productImage WHERE idProduct = ?";
+      const deleteProductQuery = "DELETE FROM Product WHERE idProduct = ?";
+
+      db.query(getProductPhotosQuery, [id], (photoErr, photoResults) => {
+        if (photoErr) {
+          reject(photoErr);
+          return;
+        }
+
+        const photoPaths = photoResults.map((photo) => photo.productImagePath);
+
+        // Eliminazione dei file dal server
+        photoPaths.forEach((photoPath) => {
+          const filePath = path.join("public", "uploads", photoPath);
+
+          fs.unlink(filePath, (unlinkErr) => {
+            if (unlinkErr) {
+              reject(unlinkErr);
+              return;
+            }
+          });
+        });
+
+        // Eliminazione del prodotto dal database
+        db.query(deleteProductQuery, [id], (err, result) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+
+          // Verifica se il prodotto è stato eliminato correttamente
+          if (result.affectedRows > 0) {
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        });
+      });
     });
   }
 }
