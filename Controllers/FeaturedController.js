@@ -32,6 +32,28 @@ const notFeatured = async (res, db) => {
   }
 };
 
+const findByName = async (req, res, db) => {
+  const name = req.params.name;
+
+  if (!name) {
+    res.status(400).send("Missing required fields");
+    return;
+  }
+
+  try {
+    const products = await Featured.findByName(name, db);
+    if (!products) {
+      res.status(404).send("No products found");
+      return;
+    }
+
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Error during products search:", error);
+    res.status(500).send("Internal server error");
+  }
+};
+
 const createFeatured = async (req, res, db) => {
   const idProduct = req.body.idProduct;
 
@@ -57,7 +79,7 @@ const deleteFeatured = async (req, res, db) => {
     return;
   }
 
-  Featured.delete(id, db)
+  Featured.deleteFeatured(id, db)
     .then((result) => {
       res.status(200).send("Featured deleted");
     })
@@ -69,6 +91,7 @@ const deleteFeatured = async (req, res, db) => {
 module.exports = {
   getProducts,
   notFeatured,
+  findByName,
   createFeatured,
   deleteFeatured,
 };

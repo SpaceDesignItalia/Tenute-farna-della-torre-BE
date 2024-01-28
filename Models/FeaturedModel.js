@@ -72,6 +72,31 @@ class Featured {
     });
   }
 
+  static findByName(name, db) {
+    return new Promise((resolve, reject) => {
+      const query = `SELECT p.idProduct, p.productName, p.productAmount, p.unitPrice FROM FeaturedProduct fp INNER JOIN product p ON p.idProduct = fp.idProduct WHERE p.productName LIKE ?`;
+
+      db.query(query, [`%${name}%`], (err, res) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        if (res.length === 0) {
+          resolve(null);
+          return;
+        }
+
+        const featured = res.map((product) => {
+          const { idProduct, productName, productAmount, unitPrice } = product;
+
+          return new Featured(idProduct, productName, productAmount, unitPrice);
+        });
+
+        resolve(featured);
+      });
+    });
+  }
+
   static createFeatured(newFeatured, db) {
     return new Promise((resolve, reject) => {
       const query = "INSERT INTO FeaturedProduct (idProduct) VALUES (?)";
@@ -85,7 +110,7 @@ class Featured {
     });
   }
 
-  static deleteFeatured(db, id) {
+  static deleteFeatured(id, db) {
     return new Promise((resolve, reject) => {
       const query = "DELETE FROM FeaturedProduct WHERE idProduct = ?";
       db.query(query, [id], (err, res) => {

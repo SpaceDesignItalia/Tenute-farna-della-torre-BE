@@ -4,6 +4,7 @@ const router = express.Router();
 const {
   getProducts,
   notFeatured,
+  findByName,
   createFeatured,
   deleteFeatured,
 } = require("../Controllers/FeaturedController");
@@ -16,6 +17,10 @@ const featuredRoutes = (db) => {
 
   router.get("/NotFeatured", (req, res) => {
     notFeatured(res, db);
+  });
+
+  router.get("/GetProductByName/:name", (req, res) => {
+    findByName(req, res, db);
   });
 
   // Route per la creazione di un nuovo prodotto
