@@ -7,6 +7,7 @@ const https = require("https");
 const fs = require("fs");
 
 const createProductRoutes = require("./Routes/Products");
+const createFeaturedRoutes = require("./Routes/Featured");
 
 const app = express();
 app.use(express.static("public"));
@@ -16,11 +17,7 @@ const db = require("./configs/Database");
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://www.aziendaagricolabianco.com",
-      "https://admin.aziendaagricolabianco.com",
-    ],
+    origin: "*",
     credentials: true,
   })
 );
@@ -40,6 +37,9 @@ app.use(cookieParser());
 
 const productRoutes = createProductRoutes(db);
 app.use("/Products", productRoutes);
+
+const featuredRoutes = createFeaturedRoutes(db);
+app.use("/Featured", featuredRoutes);
 
 // Configura l'opzione per HTTPS
 /* const options = {
