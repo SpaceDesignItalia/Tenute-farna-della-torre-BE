@@ -104,6 +104,38 @@ const createProduct = async (req, res, db) => {
   }
 };
 
+const editProduct = async (req, res, db) => {
+  const id = req.params.id; // Ottengo l'id del prodotto dalla richiesta
+  const editedProduct = req.body;
+  const oldPhotos = req.body.oldPhotos;
+  const editedProductPhoto = req.files;
+
+  try {
+    // Chiamata alla funzione editProduct del modello Product
+    const result = await Product.editProduct(
+      db,
+      id,
+      editedProduct,
+      oldPhotos,
+      editedProductPhoto
+    );
+
+    // Verifica se il prodotto è stato modificato con successo
+    if (result) {
+      return res
+        .status(200)
+        .json({ message: "Prodotto modificato con successo" });
+    } else {
+      return res
+        .status(500)
+        .json({ error: "Impossibile modificare il prodotto" });
+    }
+  } catch (error) {
+    console.error("Errore durante la modifica del prodotto:", error);
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
 const deleteProduct = async (req, res, db) => {
   const id = req.params.id; // Ottengo l'id del prodotto dalla richiesta
 
@@ -133,5 +165,6 @@ module.exports = {
   getProductByNameAndId,
   getProductImagesById,
   createProduct,
+  editProduct,
   deleteProduct,
 };

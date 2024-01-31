@@ -256,6 +256,102 @@ class Product {
     });
   }
 
+  static async editProduct(
+    db,
+    id,
+    editedProduct,
+    oldPhotos,
+    editedProductPhoto
+  ) {
+    return new Promise((resolve, reject) => {
+      const getOldPhotosQuery =
+        "SELECT COUNT(*) FROM productImage WHERE idProduct = ?";
+      var oldPhotosCount;
+      db.query(getOldPhotosQuery, [id], (err, result) => {
+        oldPhotosCount = result[0];
+      });
+
+      if (
+        editedProductPhoto.length > 0 ||
+        oldPhotos.length !== oldPhotosCount
+      ) {
+        // Eliminazione delle foto del prodotto dal database
+        const getOldPhotosQuery =
+          "SELECT productImagePath FROM productImage WHERE idProduct = ? AND productImagePath NOT IN (?)";
+        db.query(getOldPhotosQuery, [id, oldPhotos], (err, result) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+
+          if (result && result.length > 0) {
+            result.forEach((photo) => {
+              if (photo.productImagePath) {
+                // Verifica se la proprietà productImagePath è definita
+                fs.unlinkSync(
+                  path.join("public", "uploads", photo.productImagePath)
+                );
+              }
+            });
+          }
+        });
+
+        const oldPhotosQuery =
+          "DELETE FROM productImage WHERE idProduct = ? AND productImagePath NOT IN (?)";
+        db.query(oldPhotosQuery, [id, oldPhotos], (err, result) => {});
+
+        const addNewPhoto =
+          "INSERT INTO productImage (idProduct, productImagePath) VALUES (?, ?)";
+        editedProductPhoto.forEach((photo) => {
+          db.query(addNewPhoto, [id, photo.filename], (err, result) => {});
+        });
+
+        const updateProductQuery =
+          "UPDATE Product SET productName = ?, productDescription = ?, productAmount = ?, unitPrice = ? WHERE idProduct = ?";
+        db.query(
+          updateProductQuery,
+          [
+            editedProduct.productName,
+            editedProduct.productDescription,
+            editedProduct.productAmount,
+            editedProduct.unitPrice,
+            id,
+          ],
+          (updateErr, updateResult) => {
+            if (updateErr) {
+              reject(updateErr);
+              return;
+            }
+            resolve(updateResult.affectedRows > 0); // True se il prodotto è stato aggiornato, altrimenti False
+          }
+        );
+
+        resolve(true);
+      } else {
+        // Aggiorna i dati del prodotto
+        const updateProductQuery =
+          "UPDATE Product SET productName = ?, productDescription = ?, productAmount = ?, unitPrice = ? WHERE idProduct = ?";
+        db.query(
+          updateProductQuery,
+          [
+            editedProduct.productName,
+            editedProduct.productDescription,
+            editedProduct.productAmount,
+            editedProduct.unitPrice,
+            id,
+          ],
+          (updateErr, updateResult) => {
+            if (updateErr) {
+              reject(updateErr);
+              return;
+            }
+            resolve(updateResult.affectedRows > 0); // True se il prodotto è stato aggiornato, altrimenti False
+          }
+        );
+      }
+    });
+  }
+
   static deleteProduct(db, id) {
     return new Promise((resolve, reject) => {
       const getProductPhotosQuery =

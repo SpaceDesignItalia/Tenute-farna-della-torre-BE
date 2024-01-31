@@ -20,6 +20,7 @@ const {
   getProductByNameAndId,
   getProductImagesById,
   createProduct,
+  editProduct,
   deleteProduct,
 } = require("../Controllers/ProductController");
 
@@ -48,6 +49,11 @@ const productRoutes = (db) => {
   // Route per la creazione di un nuovo prodotto
   router.post("/CreateProduct", upload.any(), (req, res) => {
     createProduct(req, res, db);
+  });
+
+  // Route per la modifica di un prodotto
+  router.put("/EditProduct/:id", upload.any(), (req, res) => {
+    editProduct(req, res, db);
   });
 
   //Route per l'eliminazione di un prodotto
