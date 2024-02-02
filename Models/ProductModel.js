@@ -10,19 +10,20 @@ class Product {
     productDescription,
     productAmount,
     unitPrice,
-    isDiscount
+    discountCode
   ) {
     this.idProduct = idProduct;
     this.productName = productName;
     this.productDescription = productDescription;
     this.productAmount = productAmount;
     this.unitPrice = unitPrice;
-    this.isDiscount = isDiscount;
+    this.discountCode = discountCode;
   }
 
   static getAll(db) {
     return new Promise((resolve, reject) => {
-      const query = "SELECT * FROM Product";
+      const query =
+        "SELECT p.idProduct, p.productName, p.productAmount, p.unitPrice, dc.discountCode FROM Product p LEFT JOIN productdiscount pd ON p.idProduct = pd.idProduct LEFT JOIN discountcode dc ON pd.idDiscount = dc.idDiscount";
 
       db.query(query, (err, res) => {
         if (err) {
@@ -41,7 +42,7 @@ class Product {
             productDescription,
             productAmount,
             unitPrice,
-            isDiscount,
+            discountCode,
           } = product;
 
           return new Product(
@@ -50,7 +51,7 @@ class Product {
             productDescription,
             productAmount,
             unitPrice,
-            isDiscount
+            discountCode
           );
         });
 
@@ -78,7 +79,7 @@ class Product {
           productDescription,
           productAmount,
           unitPrice,
-          isDiscount,
+          discountCode,
         } = res[0];
 
         const findedProduct = new Product(
@@ -87,7 +88,7 @@ class Product {
           productDescription,
           productAmount,
           unitPrice,
-          isDiscount
+          discountCode
         );
 
         resolve(findedProduct);
@@ -115,7 +116,7 @@ class Product {
             productDescription,
             productAmount,
             unitPrice,
-            isDiscount,
+            discountCode,
           } = product;
 
           return new Product(
@@ -124,7 +125,7 @@ class Product {
             productDescription,
             productAmount,
             unitPrice,
-            isDiscount
+            discountCode
           );
         });
 
@@ -154,7 +155,7 @@ class Product {
             productDescription,
             productAmount,
             unitPrice,
-            isDiscount,
+            discountCode,
           } = product;
 
           return new Product(
@@ -163,7 +164,7 @@ class Product {
             productDescription,
             productAmount,
             unitPrice,
-            isDiscount
+            discountCode
           );
         });
 

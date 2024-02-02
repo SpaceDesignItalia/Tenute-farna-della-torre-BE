@@ -8,6 +8,7 @@ const fs = require("fs");
 
 const createProductRoutes = require("./Routes/Products");
 const createFeaturedRoutes = require("./Routes/Featured");
+const createDiscountRoutes = require("./Routes/Discount");
 
 const app = express();
 app.use(express.static("public"));
@@ -40,6 +41,9 @@ app.use("/Products", productRoutes);
 
 const featuredRoutes = createFeaturedRoutes(db);
 app.use("/Featured", featuredRoutes);
+
+const discountRoutes = createDiscountRoutes(db);
+app.use("/Discounts", discountRoutes);
 
 // Configura l'opzione per HTTPS
 /* const options = {
