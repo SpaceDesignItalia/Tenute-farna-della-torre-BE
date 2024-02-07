@@ -62,7 +62,6 @@ const getDiscountDataById = async (res, req, db) => {
 
 const getDiscountProductsById = async (res, req, db) => {
   const id = req.params.id;
-  console.log(id);
   try {
     const products = await Discount.getDiscountProductsById(db, id);
 
