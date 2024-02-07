@@ -9,6 +9,7 @@ const fs = require("fs");
 const createProductRoutes = require("./Routes/Products");
 const createFeaturedRoutes = require("./Routes/Featured");
 const createDiscountRoutes = require("./Routes/Discount");
+const createStaffer = require("./Routes/Staffer");
 
 const app = express();
 app.use(express.static("public"));
@@ -18,7 +19,7 @@ const db = require("./configs/Database");
 
 app.use(
   cors({
-    origin: "*",
+    origin: "http://localhost:5173",
     credentials: true,
   })
 );
@@ -30,7 +31,7 @@ app.use(
     saveUninitialized: false,
     resave: false,
     cookie: {
-      maxAge: 172800000,
+      maxAge: 1080000,
     },
   })
 );
@@ -44,6 +45,9 @@ app.use("/Featured", featuredRoutes);
 
 const discountRoutes = createDiscountRoutes(db);
 app.use("/Discounts", discountRoutes);
+
+const stafferRoutes = createStaffer(db);
+app.use("/Staffer", stafferRoutes);
 
 // Configura l'opzione per HTTPS
 /* const options = {

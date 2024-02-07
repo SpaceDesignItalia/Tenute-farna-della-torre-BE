@@ -169,7 +169,6 @@ class Discount {
   }
 
   static async getDiscountProductsById(db, idDiscount) {
-    console.log("ID DISCOUNT", idDiscount);
     return new Promise((resolve, reject) => {
       const query = `SELECT p.idProduct, p.productName, pi.productImagePath
       FROM product p INNER JOIN productimage pi ON p.idProduct = pi.idProduct

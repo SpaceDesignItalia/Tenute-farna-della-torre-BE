@@ -1,5 +1,5 @@
 function authenticateMiddleware(req, res, next) {
-  if (req.session && req.session.user) {
+  if (req.session && req.session.staffer) {
     // L'utente è autenticato, procedi
     next();
   } else {
