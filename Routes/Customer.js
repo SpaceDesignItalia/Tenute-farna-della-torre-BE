@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 
 const {
+  getAll,
+  getCustomerById,
+  getImagesByCustomerId,
   login,
   GetCustomerData,
   CheckSession,
@@ -9,6 +12,17 @@ const {
 
 const customerRoutes = (db) => {
   // Funzione per ottenere tutti i prodotti dal database
+  router.get("/GetAll", (req, res) => {
+    getAll(req, res, db);
+  });
+
+  router.get("/GetCustomerById/:id", (req, res) => {
+    getCustomerById(req, res, db);
+  });
+
+  router.get("/GetImagesByCustomerId/:id", (req, res) => {
+    getImagesByCustomerId(req, res, db);
+  });
 
   router.get("/CheckSession", async (req, res) => {
     CheckSession(req, res);
