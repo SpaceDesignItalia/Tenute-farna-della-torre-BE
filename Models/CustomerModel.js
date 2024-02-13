@@ -92,6 +92,24 @@ class Customer {
     });
   }
 
+  static async CountCustomers(db) {
+    return new Promise((resolve, reject) => {
+      const query = "SELECT COUNT(*) AS nCustomers FROM Customer";
+      db.query(query, (err, results) => {
+        if (err) {
+          console.log("Errore durante la query", err);
+          return reject("Errore interno del server");
+        } else {
+          const CustomerNumber = {
+            name: "Clienti registrati",
+            stats: results[0].nCustomers,
+          };
+          return resolve(CustomerNumber);
+        }
+      });
+    });
+  }
+
   static async login(req, db, email, password) {
     return new Promise((resolve, reject) => {
       const query =
@@ -130,6 +148,24 @@ class Customer {
             }
           } else {
             // L'autenticazione non è riuscita
+            return reject(false);
+          }
+        }
+      });
+    });
+  }
+
+  static async UpdateStatus(db, idStatus, idCustomer) {
+    return new Promise((resolve, reject) => {
+      const query = "UPDATE customer SET idStatus = ? WHERE idCustomer = ?";
+      db.query(query, [idStatus, idCustomer], (err, results) => {
+        if (err) {
+          console.error("Errore durante l'aggiornamento dei dati:", err);
+          return reject("Errore interno del server");
+        } else {
+          if (results.affectedRows === 1) {
+            resolve(true);
+          } else {
             return reject(false);
           }
         }

@@ -41,6 +41,17 @@ const getImagesByCustomerId = async (req, res, db) => {
   }
 };
 
+const getCustomersNumber = async (res, db) => {
+  try {
+    const CustomersNumber = await Customer.CountCustomers(db);
+
+    return res.status(200).json(CustomersNumber);
+  } catch {
+    console.log("Errore durante il recupero dei dati:", error);
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
 const login = async (req, res, db) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -60,6 +71,22 @@ const login = async (req, res, db) => {
     // Restituisci uno stato 200 (OK) e i dati dell'utente
     return res.status(200).json({ customer });
   } catch (error) {
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
+const updateCustomerStatus = async (req, res, db) => {
+  const idStatus = req.body.idStatus;
+  const idCustomer = req.params.id;
+
+  try {
+    const result = await Customer.UpdateStatus(db, idStatus, idCustomer);
+    return res.status(200).json({ result });
+  } catch (error) {
+    console.error(
+      "Errore durante l'aggiornamento dei dati del cliente:",
+      error
+    );
     return res.status(500).json({ error: "Errore interno del server" });
   }
 };
@@ -88,7 +115,9 @@ module.exports = {
   getAll,
   getCustomerById,
   getImagesByCustomerId,
+  getCustomersNumber,
   login,
+  updateCustomerStatus,
   GetCustomerData,
   CheckSession,
 };
