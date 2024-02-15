@@ -10,20 +10,26 @@ class Product {
     productDescription,
     productAmount,
     unitPrice,
-    discountCode
+    idDiscount,
+    discountCode,
+    idDiscountType,
+    discountValue
   ) {
     this.idProduct = idProduct;
     this.productName = productName;
     this.productDescription = productDescription;
     this.productAmount = productAmount;
     this.unitPrice = unitPrice;
+    this.idDiscount = idDiscount;
     this.discountCode = discountCode;
+    this.idDiscountType = idDiscountType;
+    this.discountValue = discountValue;
   }
 
   static getAll(db) {
     return new Promise((resolve, reject) => {
       const query =
-        "SELECT p.idProduct, p.productName, p.productAmount, p.unitPrice, dc.discountCode FROM Product p LEFT JOIN productdiscount pd ON p.idProduct = pd.idProduct LEFT JOIN discountcode dc ON pd.idDiscount = dc.idDiscount";
+        "SELECT p.idProduct, p.productName, p.productAmount, p.unitPrice, dc.idDiscount,dc.discountCode FROM Product p LEFT JOIN productdiscount pd ON p.idProduct = pd.idProduct LEFT JOIN discountcode dc ON pd.idDiscount = dc.idDiscount";
 
       db.query(query, (err, res) => {
         if (err) {
@@ -42,6 +48,7 @@ class Product {
             productDescription,
             productAmount,
             unitPrice,
+            idDiscount,
             discountCode,
           } = product;
 
@@ -51,6 +58,7 @@ class Product {
             productDescription,
             productAmount,
             unitPrice,
+            idDiscount,
             discountCode
           );
         });
@@ -136,8 +144,12 @@ class Product {
 
   static findByNameAndId(db, name, id) {
     return new Promise((resolve, reject) => {
-      const query =
-        "SELECT * FROM product WHERE productName LIKE ? AND idProduct = ?";
+      const query = `SELECT p.idProduct, p.productName, p.productDescription, p.productAmount, p.unitPrice, dc.idDiscountType, dc.value FROM product p 
+      LEFT JOIN productdiscount pd ON p.idProduct = pd.idProduct 
+      LEFT JOIN discountcode dc ON pd.idDiscount = dc.idDiscount 
+      LEFT JOIN discounttype dt ON dt.idDiscountType = dc.idDiscountType 
+      WHERE p.productName LIKE ? AND p.idProduct = ?`;
+
       db.query(query, [name, id], (err, res) => {
         if (err) {
           reject(err);
@@ -155,7 +167,10 @@ class Product {
             productDescription,
             productAmount,
             unitPrice,
+            idDiscount,
             discountCode,
+            idDiscountType,
+            value,
           } = product;
 
           return new Product(
@@ -164,7 +179,10 @@ class Product {
             productDescription,
             productAmount,
             unitPrice,
-            discountCode
+            idDiscount,
+            discountCode,
+            idDiscountType,
+            value
           );
         });
 
