@@ -39,8 +39,8 @@ class Customer {
     return new Promise((resolve, reject) => {
       const query = `SELECT c.idCustomer, c.name, c.surname, c.mail, c.phone, cs.idStatus, cs.statusName, dt.documentType FROM customer c 
       INNER JOIN customerstatus cs on c.idStatus = cs.idStatus 
-      INNER JOIN customerdocument cd ON c.idCustomer = cd.idCustomer 
-      INNER JOIN documenttype dt ON cd.idDocumentType = dt.idDocumentType 
+      LEFT JOIN customerdocument cd ON c.idCustomer = cd.idCustomer 
+      LEFT JOIN documenttype dt ON cd.idDocumentType = dt.idDocumentType 
       WHERE c.idCustomer = ?
       `;
       db.query(query, [id], (err, results) => {
@@ -150,6 +150,52 @@ class Customer {
             // L'autenticazione non è riuscita
             return reject(false);
           }
+        }
+      });
+    });
+  }
+
+  static async register(db, newUserData) {
+    return new Promise((resolve, reject) => {
+      const { name, surname, phone, mail, password } = newUserData;
+      const query = "SELECT * FROM customer WHERE mail = ?";
+      db.query(query, [mail], (error, results) => {
+        if (results.length === 1) {
+          return reject("Account esistente");
+        } else {
+          bcrypt.hash(password, 10, async (hashError, hashedPassword) => {
+            if (hashError) {
+              console.error(
+                "Errore durante l'hashing della password:",
+                hashError
+              );
+              return reject("Errore interno del server");
+            }
+            const query =
+              "INSERT INTO customer (name, surname, phone, mail, password) VALUES (?, ?, ?, ?, ?)";
+            db.query(
+              query,
+              [name, surname, phone, mail, hashedPassword],
+              (insertError, results) => {
+                if (insertError) {
+                  console.error(
+                    "Errore durante l'inserimento nel database:",
+                    insertError
+                  );
+                  return reject("Errore interno del server");
+                }
+                const userId = results.insertId;
+                const newUser = {
+                  id: userId,
+                  name: name,
+                  surname: surname,
+                  phone: phone,
+                  email: mail,
+                };
+                resolve(newUser);
+              }
+            );
+          });
         }
       });
     });

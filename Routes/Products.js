@@ -15,6 +15,7 @@ const upload = multer({ storage: storage });
 
 const {
   getProducts,
+  getProductsEcommerce,
   getProductById,
   getProductByName,
   getProductByNameAndId,
@@ -44,6 +45,10 @@ const productRoutes = (db) => {
 
   router.get("/GetProductImagesById/:id", (req, res) => {
     getProductImagesById(req, res, db);
+  });
+
+  router.get("/GetProductsEcommerce", (req, res) => {
+    getProductsEcommerce(req, res, db);
   });
 
   // Route per la creazione di un nuovo prodotto
