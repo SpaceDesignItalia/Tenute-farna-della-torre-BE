@@ -117,7 +117,7 @@ const GetCustomerData = async (req, res, db) => {
   // Verifica se la sessione è stata creata
   if (req.session.customer) {
     // Verifica se l'utente è autenticato
-    return res.status(200).json(req.session.customer);
+    return res.status(200).json({ customer: req.session.customer });
   } else {
     return res.status(401).json({ error: "Non autorizzato" });
   }
@@ -152,6 +152,27 @@ const logout = async (req, res) => {
   }
 };
 
+const updateCustomerData = async (req, res, db) => {
+  const userData = req.body;
+
+  console.log(userData);
+  try {
+    const result = await Customer.updateCustomerData(db, userData);
+    req.session.customer.name = userData.name;
+    req.session.customer.surname = userData.surname;
+    req.session.customer.email = userData.email;
+    req.session.customer.phone = userData.phone;
+
+    return res.status(200).json({ result });
+  } catch (error) {
+    console.error(
+      "Errore durante l'aggiornamento dei dati del cliente:",
+      error
+    );
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
 module.exports = {
   getAll,
   getCustomerById,
@@ -163,4 +184,5 @@ module.exports = {
   GetCustomerData,
   CheckSession,
   logout,
+  updateCustomerData,
 };

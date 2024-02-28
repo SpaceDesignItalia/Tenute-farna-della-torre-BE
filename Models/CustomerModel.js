@@ -218,6 +218,33 @@ class Customer {
       });
     });
   }
+
+  static async updateCustomerData(db, userData) {
+    return new Promise((resolve, reject) => {
+      db.query(
+        "UPDATE customer SET name = ?, surname = ?, phone = ?, mail = ? WHERE idCustomer = ?",
+        [
+          userData.name,
+          userData.surname,
+          userData.phone,
+          userData.email,
+          userData.id,
+        ],
+        (err, results) => {
+          if (err) {
+            console.error("Errore durante l'aggiornamento dei dati:", err);
+            return reject("Errore interno del server");
+          } else {
+            if (results.affectedRows === 1) {
+              return resolve(true);
+            } else {
+              return reject(false);
+            }
+          }
+        }
+      );
+    });
+  }
 }
 
 module.exports = Customer;

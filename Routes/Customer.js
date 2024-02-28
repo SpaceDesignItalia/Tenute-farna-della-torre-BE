@@ -12,6 +12,7 @@ const {
   GetCustomerData,
   CheckSession,
   logout,
+  updateCustomerData,
 } = require("../Controllers/CustomerController");
 
 const customerRoutes = (db) => {
@@ -55,6 +56,9 @@ const customerRoutes = (db) => {
   });
 
   // Funzione per aggiornare lo status del Cliente
+  router.put("/UpdateCustomerData", async (req, res) => {
+    updateCustomerData(req, res, db);
+  });
   router.put("/UpdateStatus/:id", async (req, res) => {
     updateCustomerStatus(req, res, db);
   });
