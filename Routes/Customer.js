@@ -10,6 +10,8 @@ const {
   updateCustomerStatus,
   GetCustomerData,
   CheckSession,
+  SendOTP,
+  checkOTP,
 } = require("../Controllers/CustomerController");
 
 const customerRoutes = (db) => {
@@ -38,9 +40,17 @@ const customerRoutes = (db) => {
     GetCustomerData(req, res, db);
   });
 
+  router.get("/CheckOTP/:token", async (req, res) => {
+    checkOTP(req, res, db);
+  });
+
   // Funzione per effettuare il login
   router.post("/Login", async (req, res) => {
     login(req, res, db);
+  });
+
+  router.post("/StartRecoverPass", async (req, res) => {
+    SendOTP(req, res, db);
   });
 
   // Funzione per aggiornare lo status del Cliente

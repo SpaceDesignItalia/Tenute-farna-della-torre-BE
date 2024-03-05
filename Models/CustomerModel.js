@@ -172,6 +172,26 @@ class Customer {
       });
     });
   }
+
+  static async sendOTP(db, email) {
+    return new Promise((resolve, reject) => {
+      const query = "SELECT surname, name FROM customer WHERE mail = ?";
+      db.query(query, [email], async (err, results) => {
+        if (err) {
+          console.error("Errore durante la query:", err);
+          return reject("Errore interno del server");
+        }
+
+        if (results.length !== 1) {
+          return reject("Nessun utente trovato con questa email");
+        }
+
+        const user = results[0];
+        const { name, surname } = user;
+        return resolve({ name, surname, email });
+      });
+    });
+  }
 }
 
 module.exports = Customer;
