@@ -68,6 +68,42 @@ class Product {
     });
   }
 
+  static getAllEcommerce(db) {
+    return new Promise((resolve, reject) => {
+      const query = `SELECT DISTINCT p.idProduct, p.productName, p.productDescription, p.productAmount, p.unitPrice, dc.value, dc.idDiscountType, pi.productImagePath FROM Product p
+    LEFT JOIN productdiscount pd ON p.idProduct = pd.idProduct
+    LEFT JOIN discountcode dc ON pd.idDiscount = dc.idDiscount
+    LEFT JOIN ( SELECT idProduct, MIN(productImagePath) AS productImagePath FROM productimage
+    GROUP BY idProduct) pi ON p.idProduct = pi.idProduct;`;
+
+      db.query(query, (err, res) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        if (res.length === 0) {
+          resolve(null);
+          return;
+        }
+
+        const products = res.map((product) => {
+          return {
+            idProduct: product.idProduct,
+            productName: product.productName,
+            productDescription: product.productDescription,
+            productAmount: product.productAmount,
+            unitPrice: product.unitPrice,
+            value: product.value,
+            idDiscountType: product.idDiscountType,
+            productImagePath: product.productImagePath,
+          };
+        });
+
+        resolve(products);
+      });
+    });
+  }
+
   static findById(db, id) {
     return new Promise((resolve, reject) => {
       const query = "SELECT * FROM Product WHERE idProduct = ?";
@@ -161,29 +197,17 @@ class Product {
         }
 
         const products = res.map((product) => {
-          const {
-            idProduct,
-            productName,
-            productDescription,
-            productAmount,
-            unitPrice,
-            idDiscount,
-            discountCode,
-            idDiscountType,
-            value,
-          } = product;
-
-          return new Product(
-            idProduct,
-            productName,
-            productDescription,
-            productAmount,
-            unitPrice,
-            idDiscount,
-            discountCode,
-            idDiscountType,
-            value
-          );
+          return {
+            idProduct: product.idProduct,
+            productName: product.productName,
+            productDescription: product.productDescription,
+            productAmount: product.productAmount,
+            unitPrice: product.unitPrice,
+            idDiscount: product.idDiscount,
+            discountCode: product.discountCode,
+            idDiscountType: product.idDiscountType,
+            value: product.value,
+          };
         });
 
         resolve(products);

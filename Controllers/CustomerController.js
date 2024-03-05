@@ -75,6 +75,28 @@ const login = async (req, res, db) => {
   }
 };
 
+const register = async (req, res, db) => {
+  const { name, surname, phone, mail, password } = req.body;
+
+  try {
+    // Verifica se l'email è già associata a un altro account
+
+    const newUser = await Customer.register(db, {
+      name,
+      surname,
+      phone,
+      mail,
+      password,
+    });
+
+    // Restituisci lo stato 201 (Creato) e i dati dell'utente registrato
+    return res.status(201).json({ newUser });
+  } catch (error) {
+    console.error("Errore durante la registrazione:", error);
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
 const updateCustomerStatus = async (req, res, db) => {
   const idStatus = req.body.idStatus;
   const idCustomer = req.params.id;
@@ -105,7 +127,7 @@ const CheckSession = async (req, res) => {
   // Verifica se la sessione è stata creata
   if (req.session.customer) {
     // Verifica se l'utente è autenticato
-    res.json(true);
+    res.status(200).json(true);
   } else {
     res.json(false);
   }
@@ -163,15 +185,36 @@ const checkOTP = async (req, res) => {
   return res.status(404).json({ error: "OTP non corretto" });
 };
 
+const logout = async (req, res) => {
+  try {
+    // Distruggi la sessione
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Errore durante il logout:", err);
+        return res.status(500).json({ error: "Errore interno del server" });
+      }
+      // Se la sessione è stata distrutta con successo, restituisci uno stato 200 (OK)
+      return res
+        .status(200)
+        .json({ message: "Logout effettuato con successo" });
+    });
+  } catch (error) {
+    console.error("Errore durante il logout:", error);
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
 module.exports = {
   getAll,
   getCustomerById,
   getImagesByCustomerId,
   getCustomersNumber,
   login,
+  register,
   updateCustomerStatus,
   GetCustomerData,
   CheckSession,
   SendOTP,
   checkOTP,
+  logout,
 };

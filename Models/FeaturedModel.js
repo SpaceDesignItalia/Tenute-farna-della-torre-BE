@@ -16,8 +16,11 @@ class Featured {
 
   static getAll(db) {
     return new Promise((resolve, reject) => {
-      const query =
-        "SELECT p.idProduct, p.productName, p.productAmount, p.unitPrice FROM FeaturedProduct fp INNER JOIN product p ON p.idProduct = fp.idProduct";
+      const query = `SELECT DISTINCT p.idProduct, p.productName, p.productDescription, p.productAmount ,p.unitPrice, dc.value, dc.idDiscountType, pi.productImagePath FROM FeaturedProduct fp
+      INNER JOIN product p ON p.idProduct = fp.idProduct
+      LEFT JOIN productdiscount pd ON p.idProduct = pd.idProduct
+      LEFT JOIN discountcode dc ON pd.idDiscount = dc.idDiscount
+      INNER JOIN (SELECT idProduct, MIN(productImagePath) AS productImagePath FROM productimage GROUP BY idProduct) pi ON p.idProduct = pi.idProduct;`;
 
       db.query(query, (err, res) => {
         if (err) {
@@ -30,9 +33,16 @@ class Featured {
         }
 
         const featured = res.map((product) => {
-          const { idProduct, productName, productAmount, unitPrice } = product;
-
-          return new Featured(idProduct, productName, productAmount, unitPrice);
+          return {
+            idProduct: product.idProduct,
+            productName: product.productName,
+            productDescription: product.productDescription,
+            productAmount: product.productAmount,
+            unitPrice: product.unitPrice,
+            value: product.value,
+            idDiscountType: product.idDiscountType,
+            productImagePath: product.productImagePath,
+          };
         });
 
         resolve(featured);
