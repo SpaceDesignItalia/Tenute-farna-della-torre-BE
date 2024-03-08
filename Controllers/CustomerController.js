@@ -173,6 +173,23 @@ const updateCustomerData = async (req, res, db) => {
   }
 };
 
+const updateCustomerPassword = async (req, res, db) => {
+  const userData = req.body;
+  try {
+    const result = await Customer.updateCustomerPassword(db, userData);
+    if (result) {
+      req.session.destroy();
+    }
+    return res.status(200).json({ result });
+  } catch (error) {
+    console.error(
+      "Errore durante l'aggiornamento della password dello staffer:",
+      error
+    );
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
 module.exports = {
   getAll,
   getCustomerById,
@@ -185,4 +202,5 @@ module.exports = {
   CheckSession,
   logout,
   updateCustomerData,
+  updateCustomerPassword,
 };

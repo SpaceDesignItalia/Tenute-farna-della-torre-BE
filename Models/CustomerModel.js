@@ -245,6 +245,49 @@ class Customer {
       );
     });
   }
+
+  static async updateCustomerPassword(db, customerData) {
+    return new Promise((resolve, reject) => {
+      const passwordEncrypted = bcrypt.hashSync(customerData.password, 10);
+      const query = "SELECT password FROM customer WHERE idCustomer = ?";
+      db.query(query, [customerData.id], (err, results) => {
+        if (err) {
+          console.error("Errore durante la query:", err);
+          return reject("Errore interno del server");
+        } else {
+          bcrypt.compare(
+            customerData.oldPassword,
+            results[0].password,
+            function (err, result) {
+              if (result === true) {
+                db.query(
+                  "UPDATE customer SET password = ? WHERE idCustomer = ?",
+                  [passwordEncrypted, customerData.id],
+                  (err, results) => {
+                    if (err) {
+                      console.error(
+                        "Errore durante l'aggiornamento della password:",
+                        err
+                      );
+                      return reject("Errore interno del server");
+                    } else {
+                      if (results.affectedRows === 1) {
+                        return resolve(true);
+                      } else {
+                        return reject(false);
+                      }
+                    }
+                  }
+                );
+              } else {
+                return reject(false);
+              }
+            }
+          );
+        }
+      });
+    });
+  }
 }
 
 module.exports = Customer;
