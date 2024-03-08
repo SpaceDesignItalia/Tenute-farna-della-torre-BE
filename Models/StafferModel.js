@@ -92,7 +92,7 @@ class Staffer {
         (err, results) => {
           if (err) {
             console.error("Errore durante la query:", err);
-            return reject("Errore interno del server");
+            return reject(new Error("Errore interno del server"));
           } else {
             if (bcrypt.compare(stafferData.password, results[0].password)) {
               console.log(passwordEncrypted);
@@ -105,7 +105,7 @@ class Staffer {
                       "Errore durante l'aggiornamento della password:",
                       err
                     );
-                    return reject("Errore interno del server");
+                    return reject(new Error("Errore interno del server"));
                   } else {
                     if (results.affectedRows === 1) {
                       return resolve(true);
