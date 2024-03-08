@@ -1,6 +1,6 @@
-// authcontroller.js
-
 const Customer = require("../Models/CustomerModel");
+const sendRecoverMail = require("../middlewares/mailSender");
+const otpGenerator = require("otp-generator");
 
 const getAll = async (req, res, db) => {
   try {
@@ -133,6 +133,58 @@ const CheckSession = async (req, res) => {
   }
 };
 
+let storedOTP = null;
+
+const SendOTP = async (req, res, db) => {
+  const email = req.body.email;
+
+  try {
+    const emailExists = await Customer.sendOTP(db, email);
+
+    if (!emailExists) {
+      return res.status(404).json({ error: "Email non presente" });
+    } else {
+      // Genera un codice OTP
+      const generatedOTP = otpGenerator.generate(8, {
+        digits: true,
+        alphabets: false,
+        upperCase: false,
+        specialChars: false,
+      });
+
+      console.log(generatedOTP);
+      storedOTP = generatedOTP;
+
+      // Costruisci il token incorporando il codice OTP
+      const token = `${generatedOTP}`;
+
+      sendRecoverMail(email, emailExists.name, emailExists.surname, token);
+
+      // Passa il token come parametro nella risposta JSON
+      return res
+        .status(200)
+        .json({ message: "Email inviata", token, storedOTP });
+    }
+  } catch (error) {
+    console.error("Errore durante l'invio dell'OTP:", error);
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
+const checkOTP = async (req, res) => {
+  const sentToken = req.params.token;
+
+  console.log(storedOTP, sentToken);
+
+  if (storedOTP && sentToken) {
+    if (sentToken === storedOTP) {
+      return res.status(200).json({ message: "OTP corretto" });
+    }
+  }
+
+  return res.status(404).json({ error: "OTP non corretto" });
+};
+
 const logout = async (req, res) => {
   try {
     // Distruggi la sessione
@@ -200,6 +252,8 @@ module.exports = {
   updateCustomerStatus,
   GetCustomerData,
   CheckSession,
+  SendOTP,
+  checkOTP,
   logout,
   updateCustomerData,
   updateCustomerPassword,

@@ -11,6 +11,8 @@ const {
   updateCustomerStatus,
   GetCustomerData,
   CheckSession,
+  SendOTP,
+  checkOTP,
   logout,
   updateCustomerData,
   updateCustomerPassword,
@@ -42,6 +44,10 @@ const customerRoutes = (db) => {
     GetCustomerData(req, res, db);
   });
 
+  router.get("/CheckOTP/:token", async (req, res) => {
+    checkOTP(req, res, db);
+  });
+
   // Funzione per effettuare il logout
   router.get("/Logout", async (req, res) => {
     logout(req, res); // Collega la funzione di logout alla route
@@ -50,6 +56,10 @@ const customerRoutes = (db) => {
   // Funzione per effettuare il login
   router.post("/Login", async (req, res) => {
     login(req, res, db);
+  });
+
+  router.post("/StartRecoverPass", async (req, res) => {
+    SendOTP(req, res, db);
   });
 
   router.post("/Register", async (req, res) => {
