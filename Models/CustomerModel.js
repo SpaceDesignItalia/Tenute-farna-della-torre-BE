@@ -269,41 +269,112 @@ class Customer {
   static async updateCustomerPassword(db, customerData) {
     return new Promise((resolve, reject) => {
       const passwordEncrypted = bcrypt.hashSync(customerData.password, 10);
-      const query = "SELECT password FROM customer WHERE idCustomer = ?";
+      const query = "SELECT password FROM customer WHERE id = ?";
       db.query(query, [customerData.id], (err, results) => {
         if (err) {
           console.error("Errore durante la query:", err);
           return reject("Errore interno del server");
         } else {
-          bcrypt.compare(
-            customerData.oldPassword,
-            results[0].password,
-            function (err, result) {
-              if (result === true) {
-                db.query(
-                  "UPDATE customer SET password = ? WHERE idCustomer = ?",
-                  [passwordEncrypted, customerData.id],
-                  (err, results) => {
-                    if (err) {
-                      console.error(
-                        "Errore durante l'aggiornamento della password:",
-                        err
-                      );
-                      return reject("Errore interno del server");
-                    } else {
-                      if (results.affectedRows === 1) {
-                        return resolve(true);
+          if (results.length === 1 && results[0].password) {
+            bcrypt.compare(
+              customerData.password,
+              results[0].password,
+              function (err, result) {
+                if (err) {
+                  console.error(
+                    "Errore durante la comparazione della password:",
+                    err
+                  );
+                  return reject("Errore interno del server");
+                }
+
+                if (result === false) {
+                  db.query(
+                    "UPDATE customer SET password = ? WHERE id = ?",
+                    [passwordEncrypted, customerData.id],
+                    (err, results) => {
+                      if (err) {
+                        console.error(
+                          "Errore durante l'aggiornamento della password:",
+                          err
+                        );
+                        return reject("Errore interno del server");
                       } else {
-                        return reject(false);
+                        if (results.affectedRows === 1) {
+                          return resolve(true);
+                        } else {
+                          return reject(false);
+                        }
                       }
                     }
-                  }
-                );
-              } else {
-                return reject(false);
+                  );
+                } else {
+                  return reject(
+                    "La password inserita è uguale a quella attuale"
+                  );
+                }
               }
-            }
-          );
+            );
+          } else {
+            return reject("Utente non trovato o password non disponibile");
+          }
+        }
+      });
+    });
+  }
+
+  static async updateCustomerPasswordEmail(db, customerData) {
+    return new Promise((resolve, reject) => {
+      const passwordEncrypted = bcrypt.hashSync(customerData.password, 10);
+      const query = "SELECT password FROM customer WHERE mail = ?";
+      db.query(query, [customerData.email], (err, results) => {
+        if (err) {
+          console.error("Errore durante la query:", err);
+          return reject("Errore interno del server");
+        } else {
+          if (results.length === 1) {
+            bcrypt.compare(
+              customerData.password,
+              results[0].password,
+              function (err, result) {
+                if (err) {
+                  console.error(
+                    "Errore durante la comparazione della password:",
+                    err
+                  );
+                  return reject("Errore interno del server");
+                }
+
+                if (result === false) {
+                  db.query(
+                    "UPDATE customer SET password = ? WHERE mail = ?",
+                    [passwordEncrypted, customerData.email],
+                    (err, results) => {
+                      if (err) {
+                        console.error(
+                          "Errore durante l'aggiornamento della password:",
+                          err
+                        );
+                        return reject("Errore interno del server");
+                      } else {
+                        if (results.affectedRows === 1) {
+                          return resolve(true);
+                        } else {
+                          return reject(false);
+                        }
+                      }
+                    }
+                  );
+                } else {
+                  return reject(
+                    "La password inserita è uguale a quella attuale"
+                  );
+                }
+              }
+            );
+          } else {
+            return reject("Utente non trovato o password non disponibile");
+          }
         }
       });
     });
