@@ -16,6 +16,7 @@ const {
   logout,
   updateCustomerData,
   updateCustomerPassword,
+  updateCustomerPasswordEmail,
 } = require("../Controllers/CustomerController");
 
 const customerRoutes = (db) => {
@@ -44,7 +45,7 @@ const customerRoutes = (db) => {
     GetCustomerData(req, res, db);
   });
 
-  router.get("/CheckOTP/:token", async (req, res) => {
+  router.get("/CheckOTP/:email/:token", async (req, res) => {
     checkOTP(req, res, db);
   });
 
@@ -73,6 +74,10 @@ const customerRoutes = (db) => {
 
   router.put("/UpdateCustomerPassword", async (req, res) => {
     updateCustomerPassword(req, res, db);
+  });
+
+  router.put("/UpdateCustomerPasswordByEmail", async (req, res) => {
+    updateCustomerPasswordEmail(req, res, db);
   });
 
   router.put("/UpdateStatus/:id", async (req, res) => {

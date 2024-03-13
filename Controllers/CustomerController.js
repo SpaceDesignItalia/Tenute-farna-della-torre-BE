@@ -151,19 +151,14 @@ const SendOTP = async (req, res, db) => {
         upperCase: false,
         specialChars: false,
       });
+      const token = generatedOTP;
 
-      console.log(generatedOTP);
-      storedOTP = generatedOTP;
+      storedOTP = email + "/" + token;
 
-      // Costruisci il token incorporando il codice OTP
-      const token = `${generatedOTP}`;
-
-      sendRecoverMail(email, emailExists.name, emailExists.surname, token);
+      sendRecoverMail(email, emailExists.name, emailExists.surname, storedOTP);
 
       // Passa il token come parametro nella risposta JSON
-      return res
-        .status(200)
-        .json({ message: "Email inviata", token, storedOTP });
+      return res.status(200).json({ message: "Email inviata", storedOTP });
     }
   } catch (error) {
     console.error("Errore durante l'invio dell'OTP:", error);
@@ -172,12 +167,10 @@ const SendOTP = async (req, res, db) => {
 };
 
 const checkOTP = async (req, res) => {
-  const sentToken = req.params.token;
+  const mailToken = req.params.email + "/" + req.params.token;
 
-  console.log(storedOTP, sentToken);
-
-  if (storedOTP && sentToken) {
-    if (sentToken === storedOTP) {
+  if (mailToken && storedOTP) {
+    if (storedOTP === mailToken) {
       return res.status(200).json({ message: "OTP corretto" });
     }
   }
@@ -235,7 +228,24 @@ const updateCustomerPassword = async (req, res, db) => {
     return res.status(200).json({ result });
   } catch (error) {
     console.error(
-      "Errore durante l'aggiornamento della password dello staffer:",
+      "Errore durante l'aggiornamento della password del cliente:",
+      error
+    );
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
+const updateCustomerPasswordEmail = async (req, res, db) => {
+  const userData = req.body;
+  try {
+    const result = await Customer.updateCustomerPasswordEmail(db, userData);
+    if (result) {
+      req.session.destroy();
+    }
+    return res.status(200).json({ result });
+  } catch (error) {
+    console.error(
+      "Errore durante l'aggiornamento della password del cliente:",
       error
     );
     return res.status(500).json({ error: "Errore interno del server" });
@@ -257,4 +267,5 @@ module.exports = {
   logout,
   updateCustomerData,
   updateCustomerPassword,
+  updateCustomerPasswordEmail,
 };
