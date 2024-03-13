@@ -70,11 +70,11 @@ class Product {
 
   static getAllEcommerce(db) {
     return new Promise((resolve, reject) => {
-      const query = `SELECT DISTINCT p.idProduct, p.productName, p.productDescription, p.productAmount, p.unitPrice, dc.value, dc.idDiscountType, pi.productImagePath FROM Product p
-    LEFT JOIN productdiscount pd ON p.idProduct = pd.idProduct
-    LEFT JOIN discountcode dc ON pd.idDiscount = dc.idDiscount
-    LEFT JOIN ( SELECT idProduct, MIN(productImagePath) AS productImagePath FROM productimage
-    GROUP BY idProduct) pi ON p.idProduct = pi.idProduct;`;
+      const query = `SELECT DISTINCT p.idProduct, p.productName, p.productDescription, p.productAmount, p.unitPrice, dc.value, dc.idDiscountType, dc.startDate, pi.productImagePath FROM Product p
+        LEFT JOIN productdiscount pd ON p.idProduct = pd.idProduct
+        LEFT JOIN discountcode dc ON pd.idDiscount = dc.idDiscount
+        LEFT JOIN ( SELECT idProduct, MIN(productImagePath) AS productImagePath FROM productimage
+        GROUP BY idProduct) pi ON p.idProduct = pi.idProduct;`;
 
       db.query(query, (err, res) => {
         if (err) {
@@ -95,6 +95,7 @@ class Product {
             unitPrice: product.unitPrice,
             value: product.value,
             idDiscountType: product.idDiscountType,
+            startDate: product.startDate,
             productImagePath: product.productImagePath,
           };
         });
@@ -180,7 +181,7 @@ class Product {
 
   static findByNameAndId(db, name, id) {
     return new Promise((resolve, reject) => {
-      const query = `SELECT p.idProduct, p.productName, p.productDescription, p.productAmount, p.unitPrice, dc.idDiscountType, dc.value FROM product p 
+      const query = `SELECT p.idProduct, p.productName, p.productDescription, p.productAmount, p.unitPrice, dc.idDiscountType, dc.startDate, dc.value FROM product p 
       LEFT JOIN productdiscount pd ON p.idProduct = pd.idProduct 
       LEFT JOIN discountcode dc ON pd.idDiscount = dc.idDiscount 
       LEFT JOIN discounttype dt ON dt.idDiscountType = dc.idDiscountType 
@@ -207,6 +208,7 @@ class Product {
             discountCode: product.discountCode,
             idDiscountType: product.idDiscountType,
             value: product.value,
+            startDate: product.startDate,
           };
         });
 
