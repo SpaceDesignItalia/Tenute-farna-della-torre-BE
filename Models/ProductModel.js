@@ -273,8 +273,6 @@ class Product {
           break;
       }
 
-      console.log(query);
-
       db.query(query, [minPrice, maxPrice], (err, res) => {
         if (err) {
           console.error("Errore durante l'esecuzione della query:", err);
