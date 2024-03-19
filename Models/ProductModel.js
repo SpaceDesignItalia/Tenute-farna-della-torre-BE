@@ -245,6 +245,62 @@ class Product {
     });
   }
 
+  static getFilteredAndSortedProducts(db, minPrice, maxPrice, orderBy) {
+    return new Promise((resolve, reject) => {
+      let query = `
+        SELECT p.idProduct, p.productName, p.productDescription, p.productAmount, p.unitPrice, dc.value, dc.idDiscountType, dc.startDate, pi.productImagePath
+        FROM Product p
+        LEFT JOIN productdiscount pd ON p.idProduct = pd.idProduct
+        LEFT JOIN discountcode dc ON pd.idDiscount = dc.idDiscount
+        LEFT JOIN (
+          SELECT idProduct, MIN(productImagePath) AS productImagePath
+          FROM productimage
+          GROUP BY idProduct
+        ) pi ON p.idProduct = pi.idProduct
+        WHERE p.unitPrice BETWEEN ? AND ?
+      `;
+
+      // Aggiungi l'ordinamento
+      switch (orderBy) {
+        case "ASC":
+          query += " ORDER BY p.unitPrice ASC";
+          break;
+        case "DESC":
+          query += " ORDER BY p.unitPrice DESC";
+          break;
+        default:
+          // Nessun ordinamento specificato, lascia invariata la query
+          break;
+      }
+
+      console.log(query);
+
+      db.query(query, [minPrice, maxPrice], (err, res) => {
+        if (err) {
+          console.error("Errore durante l'esecuzione della query:", err);
+          reject(err);
+          return;
+        }
+
+        const products = res.map((product) => {
+          return {
+            idProduct: product.idProduct,
+            productName: product.productName,
+            productDescription: product.productDescription,
+            productAmount: product.productAmount,
+            unitPrice: product.unitPrice,
+            value: product.value,
+            idDiscountType: product.idDiscountType,
+            startDate: product.startDate,
+            productImagePath: product.productImagePath,
+          };
+        });
+
+        resolve(products);
+      });
+    });
+  }
+
   static createProduct(db, newProduct, newProductPhoto) {
     return new Promise((resolve, reject) => {
       // Query per inserire il nuovo prodotto
