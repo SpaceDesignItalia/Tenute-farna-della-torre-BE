@@ -99,6 +99,29 @@ const getProductImagesById = async (req, res, db) => {
   }
 };
 
+const getFilteredAndSortedProducts = async (req, res, db) => {
+  const minPrice = req.query.minPrice;
+  const maxPrice = req.query.maxPrice;
+  const orderBy = req.query.orderBy;
+
+  try {
+    const filteredAndSortedProducts =
+      await Product.getFilteredAndSortedProducts(
+        db,
+        minPrice,
+        maxPrice,
+        orderBy
+      );
+    return res.status(200).json(filteredAndSortedProducts);
+  } catch (error) {
+    console.error(
+      "Errore durante l'applicazione dei filtri e dell'ordinamento:",
+      error
+    );
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
 const createProduct = async (req, res, db) => {
   const newProduct = req.body;
   const newProductPhoto = req.files;
@@ -180,6 +203,7 @@ module.exports = {
   getProductByName,
   getProductByNameAndId,
   getProductImagesById,
+  getFilteredAndSortedProducts,
   createProduct,
   editProduct,
   deleteProduct,

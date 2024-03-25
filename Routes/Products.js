@@ -20,6 +20,7 @@ const {
   getProductByName,
   getProductByNameAndId,
   getProductImagesById,
+  getFilteredAndSortedProducts,
   createProduct,
   editProduct,
   deleteProduct,
@@ -49,6 +50,10 @@ const productRoutes = (db) => {
 
   router.get("/GetProductsEcommerce", (req, res) => {
     getProductsEcommerce(req, res, db);
+  });
+
+  router.get("/FilterAndSortProducts", (req, res) => {
+    getFilteredAndSortedProducts(req, res, db);
   });
 
   // Route per la creazione di un nuovo prodotto
