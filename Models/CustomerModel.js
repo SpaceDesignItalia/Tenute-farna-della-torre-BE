@@ -37,11 +37,11 @@ class Customer {
 
   static async getCustomerById(db, id) {
     return new Promise((resolve, reject) => {
-      const query = `SELECT c.idCustomer, c.name, c.surname, c.mail, c.phone, cs.idStatus, cs.statusName, dt.documentType FROM customer c 
-      INNER JOIN customerstatus cs on c.idStatus = cs.idStatus 
-      LEFT JOIN customerdocument cd ON c.idCustomer = cd.idCustomer 
-      LEFT JOIN documenttype dt ON cd.idDocumentType = dt.idDocumentType 
-      WHERE c.idCustomer = ?
+      const query = `SELECT c.idCustomer, c.name, c.surname, c.mail, c.phone, cs.idStatus, cs.statusName, dt.documentType FROM customer c
+      LEFT JOIN customerstatus cs on c.idStatus = cs.idStatus
+      LEFT JOIN customerdocument cd ON c.idCustomer = cd.idCustomer
+      LEFT JOIN documenttype dt ON cd.idDocumentType = dt.idDocumentType
+      WHERE c.idCustomer = ? LIMIT 1
       `;
       db.query(query, [id], (err, results) => {
         if (err) {
@@ -72,7 +72,7 @@ class Customer {
   static async GetImagesByCustomerId(db, id) {
     return new Promise((resolve, reject) => {
       const query =
-        "SELECT  idDocument, idCustomer, documentPath FROM customerdocument WHERE idCustomer = ?";
+        "SELECT idDocument, idCustomer, documentPath FROM customerdocument WHERE idCustomer = ?";
       db.query(query, [id], (err, results) => {
         if (err) {
           console.error("Errore durante la query:", err);
@@ -197,6 +197,36 @@ class Customer {
             );
           });
         }
+      });
+    });
+  }
+
+  static async loadDocument(db, idCustomer, idDocumentType, documents) {
+    return new Promise((resolve, reject) => {
+      // Verifica se il prodotto è stato inserito correttamente
+
+      // Query per inserire l'immagine del prodotto nella tabella productImage
+      const insertDocumentQuery =
+        "INSERT INTO CustomerDocument (idCustomer, idDocumentType, documentPath) VALUES (?, ?, ?)";
+
+      documents.forEach((document) => {
+        db.query(
+          insertDocumentQuery,
+          [idCustomer, idDocumentType, document.filename],
+          (imageErr, imageResult) => {
+            if (imageErr) {
+              reject(imageErr);
+              return;
+            }
+
+            // Verifica se l'immagine è stata inserita correttamente
+            if (imageResult.affectedRows > 0) {
+              resolve(true); // Prodotto e immagine inseriti con successo
+            } else {
+              resolve(false); // Nessun record inserito per l'immagine
+            }
+          }
+        );
       });
     });
   }

@@ -1,5 +1,9 @@
 const Customer = require("../Models/CustomerModel");
-const sendRecoverMail = require("../middlewares/mailSender");
+const {
+  sendRecoverMail,
+  sendDeleteAccount,
+} = require("../middlewares/MailSender");
+
 const otpGenerator = require("otp-generator");
 
 const getAll = async (req, res, db) => {
@@ -25,7 +29,6 @@ const getCustomerById = async (req, res, db) => {
     return res.status(500).json({ error: "Errore interno del server" });
   }
 };
-
 const getImagesByCustomerId = async (req, res, db) => {
   const id = req.params.id;
 
@@ -93,6 +96,36 @@ const register = async (req, res, db) => {
     return res.status(201).json({ newUser });
   } catch (error) {
     console.error("Errore durante la registrazione:", error);
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
+const loadDocument = async (req, res, db) => {
+  const idCustomer = req.body.idCustomer;
+  const idDocumentType = req.body.idDocumentType;
+  const document = req.files;
+
+  try {
+    // Chiamata alla funzione createProduct del modello Product
+    const result = await Customer.loadDocument(
+      db,
+      idCustomer,
+      idDocumentType,
+      document
+    );
+
+    // Verifica se il prodotto è stato creato con successo
+    if (result) {
+      return res
+        .status(201)
+        .json({ message: "Documento caricato con successo" });
+    } else {
+      return res
+        .status(500)
+        .json({ error: "Impossibile caricare il documento" });
+    }
+  } catch (error) {
+    console.error("Errore durante la creazione del prodotto:", error);
     return res.status(500).json({ error: "Errore interno del server" });
   }
 };
@@ -252,6 +285,18 @@ const updateCustomerPasswordEmail = async (req, res, db) => {
   }
 };
 
+const DeleteAccount = async (req, res, db) => {
+  try {
+    sendDeleteAccount("andrix.braia@gmail.com", "Andrea", "Braia");
+  } catch (error) {
+    console.error(
+      "Errore durante l'aggiornamento della password del cliente:",
+      error
+    );
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
 module.exports = {
   getAll,
   getCustomerById,
@@ -259,6 +304,7 @@ module.exports = {
   getCustomersNumber,
   login,
   register,
+  loadDocument,
   updateCustomerStatus,
   GetCustomerData,
   CheckSession,
@@ -268,4 +314,5 @@ module.exports = {
   updateCustomerData,
   updateCustomerPassword,
   updateCustomerPasswordEmail,
+  DeleteAccount,
 };

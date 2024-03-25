@@ -1,5 +1,16 @@
 const express = require("express");
 const router = express.Router();
+const multer = require("multer");
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "public/Documents/"); // Specifica la directory di destinazione dei file caricati
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + "_" + Date.now() + file.originalname); // Specifica il nome del file caricato
+  },
+});
+const upload = multer({ storage: storage });
 
 const {
   getAll,
@@ -17,6 +28,8 @@ const {
   updateCustomerData,
   updateCustomerPassword,
   updateCustomerPasswordEmail,
+  DeleteAccount,
+  loadDocument,
 } = require("../Controllers/CustomerController");
 
 const customerRoutes = (db) => {
@@ -67,6 +80,10 @@ const customerRoutes = (db) => {
     register(req, res, db);
   });
 
+  router.post("/LoadDocument", upload.any(), async (req, res) => {
+    loadDocument(req, res, db);
+  });
+
   // Funzione per aggiornare lo status del Cliente
   router.put("/UpdateCustomerData", async (req, res) => {
     updateCustomerData(req, res, db);
@@ -83,6 +100,14 @@ const customerRoutes = (db) => {
   router.put("/UpdateStatus/:id", async (req, res) => {
     updateCustomerStatus(req, res, db);
   });
+
+  // Funzione per eliminare un Cliente
+
+  router.delete("/DeleteCustomer/:id", (req, res) => {
+    console.log("Test");
+    DeleteAccount(req, res, db);
+  });
+
   return router;
 };
 
