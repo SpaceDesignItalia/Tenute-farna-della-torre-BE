@@ -28,8 +28,34 @@ class Customer {
               status: customer.statusName,
             };
           });
-
           return resolve(customers);
+        }
+      });
+    });
+  }
+
+  static async getAllShippingInfo(db, customerId) {
+    return new Promise((resolve, reject) => {
+      const query = `SELECT csd.idShippingDetail, csd.name, csd.address, csd.civicNumber, csd.cap, csd.city, csd.province, csd.nation FROM customershippingdetail csd INNER JOIN shippinginfo si ON csd.idShippingDetail = si.idShippingDetail WHERE si.idCustomer = ?`;
+      db.query(query, [customerId], (err, results) => {
+        if (err) {
+          console.error(
+            "Errore durante la query per ottenere le informazioni di spedizione:",
+            err
+          );
+          return reject("Errore interno del server");
+        } else {
+          const shippingInfo = results.map((info) => ({
+            id: info.idShippingDetail,
+            name: info.name,
+            address: info.address,
+            civicNumber: info.civicNumber,
+            cap: info.cap,
+            city: info.city,
+            province: info.province,
+            nation: info.nation,
+          }));
+          return resolve(shippingInfo);
         }
       });
     });
@@ -201,6 +227,55 @@ class Customer {
     });
   }
 
+  static async addShippingInfo(
+    db,
+    customerId,
+    name,
+    address,
+    civicNumber,
+    cap,
+    city,
+    province,
+    nation
+  ) {
+    return new Promise((resolve, reject) => {
+      const query = `INSERT INTO customershippingdetail (name, address, civicNumber, cap, city, province, nation) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+      db.query(
+        query,
+        [name, address, civicNumber, cap, city, province, nation],
+        (err, results) => {
+          if (err) {
+            console.error(
+              "Errore durante l'inserimento delle informazioni di spedizione:",
+              err
+            );
+            return reject("Errore interno del server");
+          } else {
+            const shippingDetailId = results.insertId;
+            const linkQuery = `INSERT INTO shippinginfo (idCustomer, idShippingDetail) VALUES (?, ?)`;
+            db.query(
+              linkQuery,
+              [customerId, shippingDetailId],
+              (linkErr, linkResults) => {
+                if (linkErr) {
+                  console.error(
+                    "Errore durante l'associazione delle informazioni di spedizione al cliente:",
+                    linkErr
+                  );
+                  return reject("Errore interno del server");
+                } else {
+                  return resolve(
+                    "Informazioni di spedizione aggiunte con successo"
+                  );
+                }
+              }
+            );
+          }
+        }
+      );
+    });
+  }
+
   static async loadDocument(db, idCustomer, idDocumentType, documents) {
     return new Promise((resolve, reject) => {
       // Verifica se il prodotto è stato inserito correttamente
@@ -249,6 +324,90 @@ class Customer {
     });
   }
 
+  static async updateShippingInfo(
+    db,
+    name,
+    address,
+    civicNumber,
+    cap,
+    city,
+    province,
+    nation,
+    idShippingDetail
+  ) {
+    return new Promise((resolve, reject) => {
+      const updateQuery =
+        "UPDATE customershippingdetail SET name = ?, address = ?, civicNumber = ?, cap = ?, city = ?, province = ?, nation = ? WHERE idShippingDetail = ?";
+
+      db.query(
+        updateQuery,
+        [
+          name,
+          address,
+          civicNumber,
+          cap,
+          city,
+          province,
+          nation,
+          idShippingDetail,
+        ],
+        (updateErr, updateResults) => {
+          if (updateErr) {
+            console.error(
+              "Errore durante l'aggiornamento delle informazioni di spedizione:",
+              updateErr
+            );
+            return reject("Errore interno del server");
+          } else {
+            return resolve(
+              "Informazioni di spedizione aggiornate con successo"
+            );
+          }
+        }
+      );
+    });
+  }
+
+  static async deleteShippingInformations(db, idCustomer, idShippingDetail) {
+    return new Promise((resolve, reject) => {
+      const deleteQuery = `DELETE FROM shippinginfo WHERE idCustomer = ? AND idShippingDetail = ?`;
+
+      db.query(
+        deleteQuery,
+        [idCustomer, idShippingDetail],
+        (deleteErr, deleteResults) => {
+          if (deleteErr) {
+            console.error(
+              "Errore durante l'eliminazione delle informazioni di spedizione:",
+              deleteErr
+            );
+            return reject("Errore interno del server");
+          } else {
+            const deleteShippingDetailQuery = `DELETE FROM customershippingdetail WHERE idShippingDetail = ?`;
+
+            db.query(
+              deleteShippingDetailQuery,
+              [idShippingDetail],
+              (deleteShippingDetailErr, deleteShippingDetailResults) => {
+                if (deleteShippingDetailErr) {
+                  console.error(
+                    "Errore durante l'eliminazione delle informazioni di spedizione:",
+                    deleteShippingDetailErr
+                  );
+                  return reject("Errore interno del server");
+                } else {
+                  return resolve(
+                    "Informazioni di spedizione eliminate con successo"
+                  );
+                }
+              }
+            );
+          }
+        }
+      );
+    });
+  }
+
   static async sendOTP(db, email) {
     return new Promise((resolve, reject) => {
       const query = "SELECT surname, name FROM customer WHERE mail = ?";
@@ -266,6 +425,75 @@ class Customer {
         const { name, surname } = user;
         return resolve({ name, surname, email });
       });
+    });
+  }
+
+  static async setDefaultShippingInfo(db, customerId, idShippingDetail) {
+    return new Promise((resolve, reject) => {
+      const query = `UPDATE shippinginfo SET isDefault = 1 WHERE idCustomer = ? AND idShippingDetail = ?`;
+      const resetQuery = `UPDATE shippinginfo SET isDefault = 0 WHERE idCustomer = ? AND idShippingDetail != ?`;
+
+      db.query(query, [customerId, idShippingDetail], (err, results) => {
+        if (err) {
+          console.error(
+            "Errore durante l'aggiornamento delle informazioni di spedizione:",
+            err
+          );
+          return reject("Errore interno del server");
+        } else {
+          if (results.affectedRows === 1) {
+            return resolve(
+              "Informazioni di spedizione aggiornate con successo"
+            );
+          } else {
+            return reject("Informazioni di spedizione non aggiornate");
+          }
+        }
+      });
+      db.query(resetQuery, [customerId, idShippingDetail], (err, results) => {
+        if (err) {
+          console.error(
+            "Errore durante l'aggiornamento delle informazioni di spedizione:",
+            err
+          );
+          return reject("Errore interno del server");
+        } else {
+          if (results.affectedRows === 1) {
+            return resolve(
+              "Informazioni di spedizione aggiornate con successo"
+            );
+          } else {
+            return reject("Informazioni di spedizione non aggiornate");
+          }
+        }
+      });
+    });
+  }
+
+  static async isDefaultShippingInfo(db, customerId, idShippingDetail) {
+    return new Promise((resolve, reject) => {
+      const query = `SELECT isDefault FROM shippinginfo WHERE idShippingDetail = ? AND idCustomer = ?`;
+
+      db.query(
+        query,
+        [idShippingDetail, customerId],
+
+        (err, results) => {
+          if (err) {
+            console.error(
+              "Errore durante il recupero delle informazioni di spedizione:",
+              err
+            );
+            return reject("Errore interno del server");
+          } else {
+            if (results.length === 1) {
+              return resolve(results[0].isDefault);
+            } else {
+              return reject("Informazioni di spedizione non trovate");
+            }
+          }
+        }
+      );
     });
   }
 

@@ -15,6 +15,16 @@ const getAll = async (req, res, db) => {
   }
 };
 
+const getAllShipping = async (req, res, db) => {
+  const customerId = req.query.customerId;
+  try {
+    const customers = await Customer.getAllShippingInfo(db, customerId);
+    return res.status(200).json(customers);
+  } catch (error) {
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
 const getCustomerById = async (req, res, db) => {
   const id = req.params.id;
 
@@ -29,6 +39,7 @@ const getCustomerById = async (req, res, db) => {
     return res.status(500).json({ error: "Errore interno del server" });
   }
 };
+
 const getImagesByCustomerId = async (req, res, db) => {
   const id = req.params.id;
 
@@ -79,7 +90,7 @@ const login = async (req, res, db) => {
 };
 
 const register = async (req, res, db) => {
-  const { name, surname, phone, mail, password } = req.body;
+  const { name, surname, phone, mail, password } = req.params;
 
   try {
     // Verifica se l'email è già associata a un altro account
@@ -96,6 +107,30 @@ const register = async (req, res, db) => {
     return res.status(201).json({ newUser });
   } catch (error) {
     console.error("Errore durante la registrazione:", error);
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
+const addShippingInfo = async (req, res, db) => {
+  const { name, address, civicNumber, cap, city, province, nation } = req.body;
+  const idCustomer = req.body.customerId;
+
+  try {
+    const newShippingInfo = await Customer.addShippingInfo(
+      db,
+      idCustomer,
+      name,
+      address,
+      civicNumber,
+      cap,
+      city,
+      province,
+      nation
+    );
+
+    return res.status(201).json({ newShippingInfo });
+  } catch (error) {
+    console.error("Errore durante l'aggiunta:", error);
     return res.status(500).json({ error: "Errore interno del server" });
   }
 };
@@ -149,7 +184,6 @@ const updateCustomerStatus = async (req, res, db) => {
 const GetCustomerData = async (req, res, db) => {
   // Verifica se la sessione è stata creata
   if (req.session.customer) {
-    // Verifica se l'utente è autenticato
     return res.status(200).json({ customer: req.session.customer });
   } else {
     return res.status(401).json({ error: "Non autorizzato" });
@@ -230,6 +264,77 @@ const logout = async (req, res) => {
   }
 };
 
+const setDefaultShipping = async (req, res, db) => {
+  const idShippingDetail = req.body.idShippingInfo;
+  const customerId = req.body.idCustomer;
+
+  try {
+    const result = await Customer.setDefaultShippingInfo(
+      db,
+      customerId,
+      idShippingDetail
+    );
+    return res.status(200).json({ result });
+  } catch (error) {
+    console.error(
+      "Errore durante l'aggiornamento dei dati del cliente:",
+      error
+    );
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
+const isDefault = async (req, res, db) => {
+  const idShippingInfo = req.query.idShippingInfo;
+  const idCustomer = req.query.idCustomer;
+
+  try {
+    const result = await Customer.isDefaultShippingInfo(
+      db,
+      idCustomer,
+      idShippingInfo
+    );
+    return res.status(200).json({ result });
+  } catch (error) {
+    console.error(
+      "Errore durante l'aggiornamento dei dati del cliente:",
+      error
+    );
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
+const updateShippingDetail = async (req, res, db) => {
+  const {
+    name,
+    address,
+    civicNumber,
+    cap,
+    city,
+    province,
+    nation,
+    idShippingDetail,
+  } = req.body;
+  try {
+    const newShippingInfo = await Customer.updateShippingInfo(
+      db,
+      name,
+      address,
+      civicNumber,
+      cap,
+      city,
+      province,
+      nation,
+      idShippingDetail
+    );
+
+    return res.status(200).json({ newShippingInfo });
+  } catch (error) {
+    console.error("Errore durante l'aggiornamento:", error);
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
 const updateCustomerData = async (req, res, db) => {
   const userData = req.body;
 
@@ -297,13 +402,35 @@ const DeleteAccount = async (req, res, db) => {
   }
 };
 
+const deleteShippingInfo = async (req, res, db) => {
+  const idShippingInfo = req.query.idShippingInfo;
+  const idCustomer = req.query.idCustomer;
+
+  try {
+    const result = await Customer.deleteShippingInformations(
+      db,
+      idCustomer,
+      idShippingInfo
+    );
+    return res.status(200).json({ result });
+  } catch (error) {
+    console.error(
+      "Errore durante l'eliminazione delle informazioni di spedizione:",
+      error
+    );
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
 module.exports = {
   getAll,
+  getAllShipping,
   getCustomerById,
   getImagesByCustomerId,
   getCustomersNumber,
   login,
   register,
+  addShippingInfo,
   loadDocument,
   updateCustomerStatus,
   GetCustomerData,
@@ -311,8 +438,12 @@ module.exports = {
   SendOTP,
   checkOTP,
   logout,
+  setDefaultShipping,
+  isDefault,
   updateCustomerData,
   updateCustomerPassword,
   updateCustomerPasswordEmail,
+  updateShippingDetail,
   DeleteAccount,
+  deleteShippingInfo,
 };

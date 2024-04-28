@@ -14,22 +14,28 @@ const upload = multer({ storage: storage });
 
 const {
   getAll,
+  getAllShipping,
   getCustomerById,
   getImagesByCustomerId,
   getCustomersNumber,
   login,
   register,
+  addShippingInfo,
   updateCustomerStatus,
   GetCustomerData,
   CheckSession,
   SendOTP,
   checkOTP,
   logout,
+  setDefaultShipping,
   updateCustomerData,
   updateCustomerPassword,
   updateCustomerPasswordEmail,
   DeleteAccount,
+  deleteShippingInfo,
   loadDocument,
+  isDefault,
+  updateShippingDetail,
 } = require("../Controllers/CustomerController");
 
 const customerRoutes = (db) => {
@@ -50,6 +56,10 @@ const customerRoutes = (db) => {
     getCustomersNumber(res, db);
   });
 
+  router.get("/GetAllShippingInfo", (req, res) => {
+    getAllShipping(req, res, db);
+  });
+
   router.get("/CheckSession", async (req, res) => {
     CheckSession(req, res);
   });
@@ -62,12 +72,10 @@ const customerRoutes = (db) => {
     checkOTP(req, res, db);
   });
 
-  // Funzione per effettuare il logout
   router.get("/Logout", async (req, res) => {
-    logout(req, res); // Collega la funzione di logout alla route
+    logout(req, res);
   });
 
-  // Funzione per effettuare il login
   router.post("/Login", async (req, res) => {
     login(req, res, db);
   });
@@ -80,11 +88,18 @@ const customerRoutes = (db) => {
     register(req, res, db);
   });
 
+  router.post("/AddShippingInfo", async (req, res) => {
+    addShippingInfo(req, res, db);
+  });
+
   router.post("/LoadDocument", upload.any(), async (req, res) => {
     loadDocument(req, res, db);
   });
 
-  // Funzione per aggiornare lo status del Cliente
+  router.put("/SetDefaultShipping", async (req, res) => {
+    setDefaultShipping(req, res, db);
+  });
+
   router.put("/UpdateCustomerData", async (req, res) => {
     updateCustomerData(req, res, db);
   });
@@ -101,11 +116,21 @@ const customerRoutes = (db) => {
     updateCustomerStatus(req, res, db);
   });
 
-  // Funzione per eliminare un Cliente
+  router.put("/UpdateShippingInfo", async (req, res) => {
+    updateShippingDetail(req, res, db);
+  });
+
+  router.get("/isDefaultShipping", async (req, res) => {
+    isDefault(req, res, db);
+  });
 
   router.delete("/DeleteCustomer/:id", (req, res) => {
     console.log("Test");
     DeleteAccount(req, res, db);
+  });
+
+  router.delete("/DeleteShippingInfo", (req, res) => {
+    deleteShippingInfo(req, res, db);
   });
 
   return router;
