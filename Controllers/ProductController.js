@@ -125,10 +125,16 @@ const getFilteredAndSortedProducts = async (req, res, db) => {
 const createProduct = async (req, res, db) => {
   const newProduct = req.body;
   const newProductPhoto = req.files;
+  const newLabelPhoto = req.files[0];
 
   try {
     // Chiamata alla funzione createProduct del modello Product
-    const result = await Product.createProduct(db, newProduct, newProductPhoto);
+    const result = await Product.createProduct(
+      db,
+      newProduct,
+      newProductPhoto,
+      newLabelPhoto
+    );
 
     // Verifica se il prodotto è stato creato con successo
     if (result) {

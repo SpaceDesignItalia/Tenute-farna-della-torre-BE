@@ -299,7 +299,7 @@ class Product {
     });
   }
 
-  static createProduct(db, newProduct, newProductPhoto) {
+  static createProduct(db, newProduct, newProductPhoto, newLabelPhoto) {
     return new Promise((resolve, reject) => {
       // Query per inserire il nuovo prodotto
       const insertProductQuery =
@@ -329,24 +329,49 @@ class Product {
               "INSERT INTO productImage (idProduct, productImagePath) VALUES (?, ?)";
 
             newProductPhoto.forEach((photo) => {
+              if (photo.fieldname !== "productLabel") {
+                db.query(
+                  insertImageQuery,
+                  [newProductId, photo.filename],
+                  (imageErr, imageResult) => {
+                    if (imageErr) {
+                      reject(imageErr);
+                      return;
+                    }
+
+                    // Verifica se l'immagine è stata inserita correttamente
+                    if (imageResult.affectedRows > 0) {
+                      resolve(true); // Prodotto e immagine inseriti con successo
+                    } else {
+                      resolve(false); // Nessun record inserito per l'immagine
+                    }
+                  }
+                );
+              }
+            });
+
+            if (newLabelPhoto) {
+              const insertLabelQuery =
+                "INSERT INTO productLabel (idProduct, path) VALUES (?, ?)";
               db.query(
-                insertImageQuery,
-                [newProductId, photo.filename],
-                (imageErr, imageResult) => {
-                  if (imageErr) {
-                    reject(imageErr);
+                insertLabelQuery,
+                [newProductId, newLabelPhoto.filename],
+                (labelErr, labelResult) => {
+                  if (labelErr) {
+                    reject(labelErr);
                     return;
                   }
 
-                  // Verifica se l'immagine è stata inserita correttamente
-                  if (imageResult.affectedRows > 0) {
-                    resolve(true); // Prodotto e immagine inseriti con successo
+                  if (labelResult.affectedRows > 0) {
+                    resolve(true); // Prodotto e etichetta inseriti con successo
                   } else {
-                    resolve(false); // Nessun record inserito per l'immagine
+                    resolve(false); // Nessun record inserito per l'etichetta
                   }
                 }
               );
-            });
+            } else {
+              resolve(false); // Nessun record inserito per il prodotto
+            }
           } else {
             resolve(false); // Nessun record inserito per il prodotto
           }
