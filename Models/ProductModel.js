@@ -258,11 +258,12 @@ class Product {
           return;
         }
         const labels = res.map((label) => {
-          const { idProductLabel, idProduct, idLabel } = label;
+          const { idProductLabel, idProduct, idLabel, path } = label;
           return {
             idProductLabel,
             idProduct,
             idLabel,
+            path,
           };
         });
         resolve(labels);
