@@ -245,6 +245,31 @@ class Product {
     });
   }
 
+  static findLabelById(db, id) {
+    return new Promise((resolve, reject) => {
+      const query = "SELECT * FROM productLabel WHERE idProduct = ?";
+      db.query(query, [id], (err, res) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        if (res.length === 0) {
+          resolve(null);
+          return;
+        }
+        const labels = res.map((label) => {
+          const { idProductLabel, idProduct, idLabel } = label;
+          return {
+            idProductLabel,
+            idProduct,
+            idLabel,
+          };
+        });
+        resolve(labels);
+      });
+    });
+  }
+
   static getFilteredAndSortedProducts(db, minPrice, maxPrice, orderBy) {
     return new Promise((resolve, reject) => {
       let query = `
@@ -385,7 +410,9 @@ class Product {
     id,
     editedProduct,
     oldPhotos,
-    editedProductPhoto
+    oldLabelPhoto,
+    editedProductPhoto,
+    editedLabelPhoto
   ) {
     return new Promise((resolve, reject) => {
       const getOldPhotosQuery =
@@ -424,11 +451,27 @@ class Product {
           "DELETE FROM productImage WHERE idProduct = ? AND productImagePath NOT IN (?)";
         db.query(oldPhotosQuery, [id, oldPhotos], (err, result) => {});
 
+        const oldLabelPhotoQuery =
+          "DELETE FROM productLabel WHERE idProduct = ?";
+        if (oldLabelPhoto) {
+          db.query(oldLabelPhotoQuery, [id], (err, result) => {});
+        }
+
         const addNewPhoto =
           "INSERT INTO productImage (idProduct, productImagePath) VALUES (?, ?)";
         editedProductPhoto.forEach((photo) => {
           db.query(addNewPhoto, [id, photo.filename], (err, result) => {});
         });
+
+        const addNewLabelPhoto =
+          "INSERT INTO productLabel (idProduct, path) VALUES (?, ?)";
+        if (editedLabelPhoto) {
+          db.query(
+            addNewLabelPhoto,
+            [id, editedLabelPhoto.filename],
+            (err, result) => {}
+          );
+        }
 
         const updateProductQuery =
           "UPDATE Product SET productName = ?, productDescription = ?, productAmount = ?, unitPrice = ? WHERE idProduct = ?";

@@ -20,6 +20,7 @@ const {
   getProductByName,
   getProductByNameAndId,
   getProductImagesById,
+  getProductLabelById,
   getFilteredAndSortedProducts,
   createProduct,
   editProduct,
@@ -46,6 +47,10 @@ const productRoutes = (db) => {
 
   router.get("/GetProductImagesById/:id", (req, res) => {
     getProductImagesById(req, res, db);
+  });
+
+  router.get("/GetProductLabelById/:id", (req, res) => {
+    getProductLabelById(req, res, db);
   });
 
   router.get("/GetProductsEcommerce", (req, res) => {
