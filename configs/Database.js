@@ -3,8 +3,8 @@ const mysql = require("mysql");
 
 const db = mysql.createPool({
   host: "localhost",
-  user: "root",
-  password: "",
+  user: "tenutefarinadbmanager",
+  password: process.env.DB_PASSWORD,
   database: "tenutefarina",
 });
 

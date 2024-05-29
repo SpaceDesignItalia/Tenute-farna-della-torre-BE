@@ -18,10 +18,15 @@ app.use(express.static("public"));
 const PORT = 3000;
 
 const db = require("./configs/Database");
+const { serve } = require("swagger-ui-express");
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5174"],
+    origin: [
+      "https://www.tenutefarina.it",
+      "http://localhost:5174",
+      "http://localhost:5173",
+    ],
     credentials: true,
   })
 );
@@ -56,16 +61,15 @@ const customerRoutes = createCustomerRoutes(db);
 app.use("/Customer", customerRoutes);
 
 // Configura l'opzione per HTTPS
-/* const options = {
+const options = {
   key: fs.readFileSync("SSL/privatekey.key"),
-  cert: fs.readFileSync("SSL/certificato.pem"),
-}; */
+  cert: fs.readFileSync("SSL/Ecommerce.pem"),
+};
 
 // Crea un server HTTPS
-/* const server = https.createServer(options, app); */
-
+const server = https.createServer(options, app);
 // Avvia il server su HTTPS
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(
     `Server Express in ascolto sulla porta ${PORT} in modalità HTTPS`
   );
