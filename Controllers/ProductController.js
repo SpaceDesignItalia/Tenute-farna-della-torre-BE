@@ -99,6 +99,22 @@ const getProductImagesById = async (req, res, db) => {
   }
 };
 
+const getProductLabelById = async (req, res, db) => {
+  const id = req.params.id; // Ottengo l'id del prodotto dalla richiesta
+
+  try {
+    const label = await Product.findLabelById(db, id); // Chiamata al metodo statico getLabelById del modello
+    if (!label) {
+      // Se non c'è un prodotto con quel nome, restituisco un errore
+      return res.status(404).json({ error: "Nessun prodotto trovato" });
+    }
+    return res.status(200).json(label); // Altrimenti restituisco il prodotto
+  } catch (error) {
+    console.error("Errore durante la ricerca del prodotto:", error); // Se c'è un errore, lo stampo e restituisco un errore 500
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
 const getFilteredAndSortedProducts = async (req, res, db) => {
   const minPrice = req.query.minPrice;
   const maxPrice = req.query.maxPrice;
@@ -125,10 +141,16 @@ const getFilteredAndSortedProducts = async (req, res, db) => {
 const createProduct = async (req, res, db) => {
   const newProduct = req.body;
   const newProductPhoto = req.files;
+  const newLabelPhoto = req.files[0];
 
   try {
     // Chiamata alla funzione createProduct del modello Product
-    const result = await Product.createProduct(db, newProduct, newProductPhoto);
+    const result = await Product.createProduct(
+      db,
+      newProduct,
+      newProductPhoto,
+      newLabelPhoto
+    );
 
     // Verifica se il prodotto è stato creato con successo
     if (result) {
@@ -147,6 +169,8 @@ const editProduct = async (req, res, db) => {
   const editedProduct = req.body;
   const oldPhotos = req.body.oldPhotos;
   const editedProductPhoto = req.files;
+  const oldLabelPhoto = req.body.oldLabelPhoto;
+  const editedLabelPhoto = req.files[1];
 
   try {
     // Chiamata alla funzione editProduct del modello Product
@@ -155,7 +179,9 @@ const editProduct = async (req, res, db) => {
       id,
       editedProduct,
       oldPhotos,
-      editedProductPhoto
+      editedProductPhoto,
+      oldLabelPhoto,
+      editedLabelPhoto
     );
 
     // Verifica se il prodotto è stato modificato con successo
@@ -203,6 +229,7 @@ module.exports = {
   getProductByName,
   getProductByNameAndId,
   getProductImagesById,
+  getProductLabelById,
   getFilteredAndSortedProducts,
   createProduct,
   editProduct,

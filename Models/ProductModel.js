@@ -3,7 +3,7 @@
 const fs = require("fs");
 const path = require("path");
 
-class Product {
+class product {
   constructor(
     idProduct,
     productName,
@@ -29,7 +29,7 @@ class Product {
   static getAll(db) {
     return new Promise((resolve, reject) => {
       const query =
-        "SELECT p.idProduct, p.productName, p.productAmount, p.unitPrice, dc.idDiscount,dc.discountCode FROM Product p LEFT JOIN productdiscount pd ON p.idProduct = pd.idProduct LEFT JOIN discountcode dc ON pd.idDiscount = dc.idDiscount";
+        "SELECT p.idProduct, p.productName, p.productAmount, p.unitPrice, dc.idDiscount,dc.discountCode FROM product p LEFT JOIN productdiscount pd ON p.idProduct = pd.idProduct LEFT JOIN discountcode dc ON pd.idDiscount = dc.idDiscount";
 
       db.query(query, (err, res) => {
         if (err) {
@@ -52,7 +52,7 @@ class Product {
             discountCode,
           } = product;
 
-          return new Product(
+          return new product(
             idProduct,
             productName,
             productDescription,
@@ -70,7 +70,7 @@ class Product {
 
   static getAllEcommerce(db) {
     return new Promise((resolve, reject) => {
-      const query = `SELECT DISTINCT p.idProduct, p.productName, p.productDescription, p.productAmount, p.unitPrice, dc.value, dc.idDiscountType, dc.startDate, pi.productImagePath FROM Product p
+      const query = `SELECT DISTINCT p.idProduct, p.productName, p.productDescription, p.productAmount, p.unitPrice, dc.value, dc.idDiscountType, dc.startDate, pi.productImagePath FROM product p
         LEFT JOIN productdiscount pd ON p.idProduct = pd.idProduct
         LEFT JOIN discountcode dc ON pd.idDiscount = dc.idDiscount
         LEFT JOIN ( SELECT idProduct, MIN(productImagePath) AS productImagePath FROM productimage
@@ -107,7 +107,7 @@ class Product {
 
   static findById(db, id) {
     return new Promise((resolve, reject) => {
-      const query = "SELECT * FROM Product WHERE idProduct = ?";
+      const query = "SELECT * FROM product WHERE idProduct = ?";
       db.query(query, [id], (err, res) => {
         if (err) {
           reject(err);
@@ -127,7 +127,7 @@ class Product {
           discountCode,
         } = res[0];
 
-        const findedProduct = new Product(
+        const findedProduct = new product(
           idProduct,
           productName,
           productDescription,
@@ -143,7 +143,7 @@ class Product {
 
   static findByName(db, { name }) {
     return new Promise((resolve, reject) => {
-      const query = "SELECT * FROM Product WHERE productName LIKE ?";
+      const query = "SELECT * FROM product WHERE productName LIKE ?";
       db.query(query, [`%${name}%`], (err, res) => {
         if (err) {
           reject(err);
@@ -164,7 +164,7 @@ class Product {
             discountCode,
           } = product;
 
-          return new Product(
+          return new product(
             idProduct,
             productName,
             productDescription,
@@ -219,7 +219,7 @@ class Product {
 
   static findPhotosById(db, id) {
     return new Promise((resolve, reject) => {
-      const query = "SELECT * FROM productImage WHERE idProduct = ?";
+      const query = "SELECT * FROM productimage WHERE idProduct = ?";
       db.query(query, [id], (err, res) => {
         if (err) {
           reject(err);
@@ -245,11 +245,37 @@ class Product {
     });
   }
 
+  static findLabelById(db, id) {
+    return new Promise((resolve, reject) => {
+      const query = "SELECT * FROM productlabel WHERE idProduct = ?";
+      db.query(query, [id], (err, res) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        if (res.length === 0) {
+          resolve(null);
+          return;
+        }
+        const labels = res.map((label) => {
+          const { idProductLabel, idProduct, idLabel, path } = label;
+          return {
+            idProductLabel,
+            idProduct,
+            idLabel,
+            path,
+          };
+        });
+        resolve(labels);
+      });
+    });
+  }
+
   static getFilteredAndSortedProducts(db, minPrice, maxPrice, orderBy) {
     return new Promise((resolve, reject) => {
       let query = `
         SELECT p.idProduct, p.productName, p.productDescription, p.productAmount, p.unitPrice, dc.value, dc.idDiscountType, dc.startDate, pi.productImagePath
-        FROM Product p
+        FROM product p
         LEFT JOIN productdiscount pd ON p.idProduct = pd.idProduct
         LEFT JOIN discountcode dc ON pd.idDiscount = dc.idDiscount
         LEFT JOIN (
@@ -299,11 +325,11 @@ class Product {
     });
   }
 
-  static createProduct(db, newProduct, newProductPhoto) {
+  static createProduct(db, newProduct, newProductPhoto, newLabelPhoto) {
     return new Promise((resolve, reject) => {
       // Query per inserire il nuovo prodotto
       const insertProductQuery =
-        "INSERT INTO Product (productName, productDescription, productAmount, unitPrice) VALUES (?, ?, ?, ?)";
+        "INSERT INTO product (productName, productDescription, productAmount, unitPrice) VALUES (?, ?, ?, ?)";
 
       db.query(
         insertProductQuery,
@@ -324,29 +350,54 @@ class Product {
             // ID del nuovo prodotto inserito
             const newProductId = result.insertId;
 
-            // Query per inserire l'immagine del prodotto nella tabella productImage
+            // Query per inserire l'immagine del prodotto nella tabella productimage
             const insertImageQuery =
-              "INSERT INTO productImage (idProduct, productImagePath) VALUES (?, ?)";
+              "INSERT INTO productimage (idProduct, productImagePath) VALUES (?, ?)";
 
             newProductPhoto.forEach((photo) => {
+              if (photo.fieldname !== "productlabel") {
+                db.query(
+                  insertImageQuery,
+                  [newProductId, photo.filename],
+                  (imageErr, imageResult) => {
+                    if (imageErr) {
+                      reject(imageErr);
+                      return;
+                    }
+
+                    // Verifica se l'immagine è stata inserita correttamente
+                    if (imageResult.affectedRows > 0) {
+                      resolve(true); // Prodotto e immagine inseriti con successo
+                    } else {
+                      resolve(false); // Nessun record inserito per l'immagine
+                    }
+                  }
+                );
+              }
+            });
+
+            if (newLabelPhoto) {
+              const insertLabelQuery =
+                "INSERT INTO productlabel (idProduct, path) VALUES (?, ?)";
               db.query(
-                insertImageQuery,
-                [newProductId, photo.filename],
-                (imageErr, imageResult) => {
-                  if (imageErr) {
-                    reject(imageErr);
+                insertLabelQuery,
+                [newProductId, newLabelPhoto.filename],
+                (labelErr, labelResult) => {
+                  if (labelErr) {
+                    reject(labelErr);
                     return;
                   }
 
-                  // Verifica se l'immagine è stata inserita correttamente
-                  if (imageResult.affectedRows > 0) {
-                    resolve(true); // Prodotto e immagine inseriti con successo
+                  if (labelResult.affectedRows > 0) {
+                    resolve(true); // Prodotto e etichetta inseriti con successo
                   } else {
-                    resolve(false); // Nessun record inserito per l'immagine
+                    resolve(false); // Nessun record inserito per l'etichetta
                   }
                 }
               );
-            });
+            } else {
+              resolve(false); // Nessun record inserito per il prodotto
+            }
           } else {
             resolve(false); // Nessun record inserito per il prodotto
           }
@@ -360,11 +411,13 @@ class Product {
     id,
     editedProduct,
     oldPhotos,
-    editedProductPhoto
+    oldLabelPhoto,
+    editedProductPhoto,
+    editedLabelPhoto
   ) {
     return new Promise((resolve, reject) => {
       const getOldPhotosQuery =
-        "SELECT COUNT(*) FROM productImage WHERE idProduct = ?";
+        "SELECT COUNT(*) FROM productimage WHERE idProduct = ?";
       var oldPhotosCount;
       db.query(getOldPhotosQuery, [id], (err, result) => {
         oldPhotosCount = result[0];
@@ -376,7 +429,7 @@ class Product {
       ) {
         // Eliminazione delle foto del prodotto dal database
         const getOldPhotosQuery =
-          "SELECT productImagePath FROM productImage WHERE idProduct = ? AND productImagePath NOT IN (?)";
+          "SELECT productImagePath FROM productimage WHERE idProduct = ? AND productImagePath NOT IN (?)";
         db.query(getOldPhotosQuery, [id, oldPhotos], (err, result) => {
           if (err) {
             reject(err);
@@ -396,17 +449,33 @@ class Product {
         });
 
         const oldPhotosQuery =
-          "DELETE FROM productImage WHERE idProduct = ? AND productImagePath NOT IN (?)";
+          "DELETE FROM productimage WHERE idProduct = ? AND productImagePath NOT IN (?)";
         db.query(oldPhotosQuery, [id, oldPhotos], (err, result) => {});
 
+        const oldLabelPhotoQuery =
+          "DELETE FROM productlabel WHERE idProduct = ?";
+        if (oldLabelPhoto) {
+          db.query(oldLabelPhotoQuery, [id], (err, result) => {});
+        }
+
         const addNewPhoto =
-          "INSERT INTO productImage (idProduct, productImagePath) VALUES (?, ?)";
+          "INSERT INTO productimage (idProduct, productImagePath) VALUES (?, ?)";
         editedProductPhoto.forEach((photo) => {
           db.query(addNewPhoto, [id, photo.filename], (err, result) => {});
         });
 
+        const addNewLabelPhoto =
+          "INSERT INTO productlabel (idProduct, path) VALUES (?, ?)";
+        if (editedLabelPhoto) {
+          db.query(
+            addNewLabelPhoto,
+            [id, editedLabelPhoto.filename],
+            (err, result) => {}
+          );
+        }
+
         const updateProductQuery =
-          "UPDATE Product SET productName = ?, productDescription = ?, productAmount = ?, unitPrice = ? WHERE idProduct = ?";
+          "UPDATE product SET productName = ?, productDescription = ?, productAmount = ?, unitPrice = ? WHERE idProduct = ?";
         db.query(
           updateProductQuery,
           [
@@ -429,7 +498,7 @@ class Product {
       } else {
         // Aggiorna i dati del prodotto
         const updateProductQuery =
-          "UPDATE Product SET productName = ?, productDescription = ?, productAmount = ?, unitPrice = ? WHERE idProduct = ?";
+          "UPDATE product SET productName = ?, productDescription = ?, productAmount = ?, unitPrice = ? WHERE idProduct = ?";
         db.query(
           updateProductQuery,
           [
@@ -454,8 +523,8 @@ class Product {
   static deleteProduct(db, id) {
     return new Promise((resolve, reject) => {
       const getProductPhotosQuery =
-        "SELECT productImagePath FROM productImage WHERE idProduct = ?";
-      const deleteProductQuery = "DELETE FROM Product WHERE idProduct = ?";
+        "SELECT productImagePath FROM productimage WHERE idProduct = ?";
+      const deleteProductQuery = "DELETE FROM product WHERE idProduct = ?";
 
       db.query(getProductPhotosQuery, [id], (photoErr, photoResults) => {
         if (photoErr) {
@@ -496,4 +565,4 @@ class Product {
   }
 }
 
-module.exports = Product;
+module.exports = product;

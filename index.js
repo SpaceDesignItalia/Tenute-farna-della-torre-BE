@@ -19,10 +19,18 @@ app.use(express.static("public"));
 const PORT = 3000;
 
 const db = require("./configs/Database");
+require("dotenv").config();
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5174"],
+    origin: [
+      "https://www.tenutefarina.it",
+      "https://tenutefarina.it",
+      "https://tenutefarina.com",
+      "https://admin.tenutefarina.com",
+      "http://localhost:5174",
+      "http://localhost:5173",
+    ],
     credentials: true,
   })
 );
@@ -60,14 +68,13 @@ const analyticRoutes = createAnalyticRoutes(db);
 app.use("/Analytic", analyticRoutes);
 
 // Configura l'opzione per HTTPS
-/* const options = {
+const options = {
   key: fs.readFileSync("SSL/privatekey.key"),
-  cert: fs.readFileSync("SSL/certificato.pem"),
-}; */
+  cert: fs.readFileSync("SSL/Ecommerce.pem"),
+};
 
 // Crea un server HTTPS
-/* const server = https.createServer(options, app); */
-
+const server = https.createServer(options, app);
 // Avvia il server su HTTPS
 app.listen(PORT, () => {
   console.log(

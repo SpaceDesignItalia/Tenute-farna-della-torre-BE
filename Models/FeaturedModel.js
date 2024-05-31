@@ -16,7 +16,7 @@ class Featured {
 
   static getAll(db) {
     return new Promise((resolve, reject) => {
-      const query = `SELECT DISTINCT p.idProduct, p.productName, p.productDescription, p.productAmount ,p.unitPrice, dc.value, dc.idDiscountType, pi.productImagePath FROM FeaturedProduct fp
+      const query = `SELECT DISTINCT p.idProduct, p.productName, p.productDescription, p.productAmount ,p.unitPrice, dc.value, dc.idDiscountType, pi.productImagePath FROM featuredproduct fp
       INNER JOIN product p ON p.idProduct = fp.idProduct
       LEFT JOIN productdiscount pd ON p.idProduct = pd.idProduct
       LEFT JOIN discountcode dc ON pd.idDiscount = dc.idDiscount
@@ -53,7 +53,7 @@ class Featured {
   static notFeatured(db) {
     return new Promise((resolve, reject) => {
       const query = `SELECT p.idProduct, p.productName, pi.productImagePath FROM Product p INNER JOIN ProductImage pi ON pi.idProduct = p.idProduct 
-      WHERE p.idProduct NOT IN (SELECT idProduct FROM FeaturedProduct) GROUP BY p.idProduct`;
+      WHERE p.idProduct NOT IN (SELECT idProduct FROM featuredproduct) GROUP BY p.idProduct`;
 
       db.query(query, (err, res) => {
         if (err) {
@@ -84,7 +84,7 @@ class Featured {
 
   static findByName(name, db) {
     return new Promise((resolve, reject) => {
-      const query = `SELECT p.idProduct, p.productName, p.productAmount, p.unitPrice FROM FeaturedProduct fp INNER JOIN product p ON p.idProduct = fp.idProduct WHERE p.productName LIKE ?`;
+      const query = `SELECT p.idProduct, p.productName, p.productAmount, p.unitPrice FROM featuredproduct fp INNER JOIN product p ON p.idProduct = fp.idProduct WHERE p.productName LIKE ?`;
 
       db.query(query, [`%${name}%`], (err, res) => {
         if (err) {
@@ -109,7 +109,7 @@ class Featured {
 
   static createFeatured(newFeatured, db) {
     return new Promise((resolve, reject) => {
-      const query = "INSERT INTO FeaturedProduct (idProduct) VALUES (?)";
+      const query = "INSERT INTO featuredproduct (idProduct) VALUES (?)";
       db.query(query, [newFeatured], (err, res) => {
         if (err) {
           reject(err);
@@ -122,7 +122,7 @@ class Featured {
 
   static deleteFeatured(id, db) {
     return new Promise((resolve, reject) => {
-      const query = "DELETE FROM FeaturedProduct WHERE idProduct = ?";
+      const query = "DELETE FROM featuredproduct WHERE idProduct = ?";
       db.query(query, [id], (err, res) => {
         if (err) {
           reject(err);
