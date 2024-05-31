@@ -12,6 +12,7 @@ const createFeaturedRoutes = require("./Routes/Featured");
 const createDiscountRoutes = require("./Routes/Discount");
 const createStafferRoutes = require("./Routes/Staffer");
 const createCustomerRoutes = require("./Routes/Customer");
+const createAnalyticRoutes = require("./Routes/Analytic");
 
 const app = express();
 app.use(express.static("public"));
@@ -54,6 +55,9 @@ app.use("/Staffer", stafferRoutes);
 
 const customerRoutes = createCustomerRoutes(db);
 app.use("/Customer", customerRoutes);
+
+const analyticRoutes = createAnalyticRoutes(db);
+app.use("/Analytic", analyticRoutes);
 
 // Configura l'opzione per HTTPS
 /* const options = {

@@ -120,7 +120,7 @@ class Customer {
 
   static async CountCustomers(db) {
     return new Promise((resolve, reject) => {
-      const query = "SELECT COUNT(*) AS nCustomers FROM Customer";
+      const query = "SELECT COUNT(*) AS nCustomers FROM customer";
       db.query(query, (err, results) => {
         if (err) {
           console.log("Errore durante la query", err);
