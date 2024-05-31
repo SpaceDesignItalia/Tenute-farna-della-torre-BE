@@ -18,12 +18,15 @@ app.use(express.static("public"));
 const PORT = 3000;
 
 const db = require("./configs/Database");
-const { serve } = require("swagger-ui-express");
+require("dotenv").config();
 
 app.use(
   cors({
     origin: [
       "https://www.tenutefarina.it",
+      "https://tenutefarina.it",
+      "https://tenutefarina.com",
+      "https://admin.tenutefarina.com",
       "http://localhost:5174",
       "http://localhost:5173",
     ],
@@ -69,7 +72,7 @@ const options = {
 // Crea un server HTTPS
 const server = https.createServer(options, app);
 // Avvia il server su HTTPS
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(
     `Server Express in ascolto sulla porta ${PORT} in modalità HTTPS`
   );
