@@ -380,7 +380,7 @@ function sendRecoverMail(mail, name, surname, sid) {
                                         <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                                             <tbody>
                                             <tr>
-                                                <td> <a href="http://localhost:5173/recover/reset-password/${sid}" target="_blank">Conferma</a> </td>
+                                                <td> <a href="https://tenutefarina.it/recover/reset-password/${sid}" target="_blank">Conferma</a> </td>
                                             </tr>
                                             </tbody>
                                         </table>
