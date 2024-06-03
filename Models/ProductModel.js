@@ -219,7 +219,7 @@ class Product {
 
   static findPhotosById(db, id) {
     return new Promise((resolve, reject) => {
-      const query = "SELECT * FROM productImage WHERE idProduct = ?";
+      const query = "SELECT * FROM productimage WHERE idProduct = ?";
       db.query(query, [id], (err, res) => {
         if (err) {
           reject(err);
@@ -415,7 +415,7 @@ class Product {
   ) {
     return new Promise((resolve, reject) => {
       const getOldPhotosQuery =
-        "SELECT COUNT(*) FROM productImage WHERE idProduct = ?";
+        "SELECT COUNT(*) FROM productimage WHERE idProduct = ?";
       var oldPhotosCount;
       db.query(getOldPhotosQuery, [id], (err, result) => {
         oldPhotosCount = result[0];
@@ -427,7 +427,7 @@ class Product {
       ) {
         // Eliminazione delle foto del prodotto dal database
         const getOldPhotosQuery =
-          "SELECT productImagePath FROM productImage WHERE idProduct = ? AND productImagePath NOT IN (?)";
+          "SELECT productImagePath FROM productimage WHERE idProduct = ? AND productImagePath NOT IN (?)";
         db.query(getOldPhotosQuery, [id, oldPhotos], (err, result) => {
           if (err) {
             reject(err);
@@ -447,11 +447,11 @@ class Product {
         });
 
         const oldPhotosQuery =
-          "DELETE FROM productImage WHERE idProduct = ? AND productImagePath NOT IN (?)";
+          "DELETE FROM productimage WHERE idProduct = ? AND productImagePath NOT IN (?)";
         db.query(oldPhotosQuery, [id, oldPhotos], (err, result) => {});
 
         const addNewPhoto =
-          "INSERT INTO productImage (idProduct, productImagePath) VALUES (?, ?)";
+          "INSERT INTO productimage (idProduct, productImagePath) VALUES (?, ?)";
         editedProductPhoto.forEach((photo) => {
           db.query(addNewPhoto, [id, photo.filename], (err, result) => {});
         });
@@ -505,7 +505,7 @@ class Product {
   static deleteProduct(db, id) {
     return new Promise((resolve, reject) => {
       const getProductPhotosQuery =
-        "SELECT productImagePath FROM productImage WHERE idProduct = ?";
+        "SELECT productImagePath FROM productimage WHERE idProduct = ?";
       const deleteProductQuery = "DELETE FROM product WHERE idProduct = ?";
 
       db.query(getProductPhotosQuery, [id], (photoErr, photoResults) => {
