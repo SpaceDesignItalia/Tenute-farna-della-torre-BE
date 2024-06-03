@@ -91,7 +91,7 @@ const login = async (req, res, db) => {
 };
 
 const register = async (req, res, db) => {
-  const { name, surname, phone, mail, password } = req.params;
+  const { name, surname, phone, mail, password } = req.body;
 
   try {
     // Verifica se l'email è già associata a un altro account
