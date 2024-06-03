@@ -189,7 +189,7 @@ class Customer {
         if (results.length === 1) {
           return reject("Account esistente");
         } else {
-          bcrypt.hashSync(password, 10, async (hashError, hashedPassword) => {
+          bcrypt.hash(password, 10, (hashError, hashedPassword) => {
             if (hashError) {
               console.error(
                 "Errore durante l'hashing della password:",
