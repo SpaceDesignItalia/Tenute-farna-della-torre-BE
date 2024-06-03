@@ -72,6 +72,7 @@ const login = async (req, res, db) => {
 
   try {
     const customer = await Customer.login(req, db, email, password);
+
     if (!customer) {
       return res.status(404).json({ error: "Credenziali non valide" });
     }
@@ -196,7 +197,7 @@ const CheckSession = async (req, res) => {
     // Verifica se l'utente è autenticato
     res.status(200).json(true);
   } else {
-    res.json(false);
+    res.status(404).json(false);
   }
 };
 

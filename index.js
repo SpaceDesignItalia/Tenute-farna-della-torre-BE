@@ -2,7 +2,6 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const session = require("express-session");
-const store = new session.MemoryStore();
 const cookieParser = require("cookie-parser");
 const https = require("https");
 const fs = require("fs");
@@ -41,12 +40,15 @@ app.use(
     secret: "T^pX#z1$0%V@l2&nHbO8yGcLsAaE!WuPq4Rv7*3Sd9MwYjNfCmKgJiBkD5F",
     saveUninitialized: false,
     resave: false,
-    store: store,
     cookie: {
-      maxAge: 1080000,
+      maxAge: 172800000,
+      secure: true,
+      httpOnly: true,
+      sameSite: "none",
     },
   })
 );
+
 app.use(cookieParser());
 
 const productRoutes = createProductRoutes(db);
@@ -76,7 +78,7 @@ const options = {
 // Crea un server HTTPS
 const server = https.createServer(options, app);
 // Avvia il server su HTTPS
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(
     `Server Express in ascolto sulla porta ${PORT} in modalità HTTPS`
   );
