@@ -275,7 +275,7 @@ class Product {
     return new Promise((resolve, reject) => {
       let query = `
         SELECT p.idProduct, p.productName, p.productDescription, p.productAmount, p.unitPrice, dc.value, dc.idDiscountType, dc.startDate, pi.productImagePath
-        FROM Product p
+        FROM product p
         LEFT JOIN productdiscount pd ON p.idProduct = pd.idProduct
         LEFT JOIN discountcode dc ON pd.idDiscount = dc.idDiscount
         LEFT JOIN (
@@ -457,7 +457,7 @@ class Product {
         });
 
         const updateProductQuery =
-          "UPDATE Product SET productName = ?, productDescription = ?, productAmount = ?, unitPrice = ? WHERE idProduct = ?";
+          "UPDATE product SET productName = ?, productDescription = ?, productAmount = ?, unitPrice = ? WHERE idProduct = ?";
         db.query(
           updateProductQuery,
           [
@@ -480,7 +480,7 @@ class Product {
       } else {
         // Aggiorna i dati del prodotto
         const updateProductQuery =
-          "UPDATE Product SET productName = ?, productDescription = ?, productAmount = ?, unitPrice = ? WHERE idProduct = ?";
+          "UPDATE product SET productName = ?, productDescription = ?, productAmount = ?, unitPrice = ? WHERE idProduct = ?";
         db.query(
           updateProductQuery,
           [
@@ -506,7 +506,7 @@ class Product {
     return new Promise((resolve, reject) => {
       const getProductPhotosQuery =
         "SELECT productImagePath FROM productImage WHERE idProduct = ?";
-      const deleteProductQuery = "DELETE FROM Product WHERE idProduct = ?";
+      const deleteProductQuery = "DELETE FROM product WHERE idProduct = ?";
 
       db.query(getProductPhotosQuery, [id], (photoErr, photoResults) => {
         if (photoErr) {
