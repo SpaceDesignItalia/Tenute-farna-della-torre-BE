@@ -29,7 +29,7 @@ class Product {
   static getAll(db) {
     return new Promise((resolve, reject) => {
       const query =
-        "SELECT p.idProduct, p.productName, p.productAmount, p.unitPrice, dc.idDiscount,dc.discountCode FROM Product p LEFT JOIN productdiscount pd ON p.idProduct = pd.idProduct LEFT JOIN discountcode dc ON pd.idDiscount = dc.idDiscount";
+        "SELECT p.idProduct, p.productName, p.productAmount, p.unitPrice, dc.idDiscount,dc.discountCode FROM product p LEFT JOIN productdiscount pd ON p.idProduct = pd.idProduct LEFT JOIN discountcode dc ON pd.idDiscount = dc.idDiscount";
 
       db.query(query, (err, res) => {
         if (err) {
@@ -70,7 +70,7 @@ class Product {
 
   static getAllEcommerce(db) {
     return new Promise((resolve, reject) => {
-      const query = `SELECT DISTINCT p.idProduct, p.productName, p.productDescription, p.productAmount, p.unitPrice, dc.value, dc.idDiscountType, dc.startDate, pi.productImagePath FROM Product p
+      const query = `SELECT DISTINCT p.idProduct, p.productName, p.productDescription, p.productAmount, p.unitPrice, dc.value, dc.idDiscountType, dc.startDate, pi.productImagePath FROM product p
         LEFT JOIN productdiscount pd ON p.idProduct = pd.idProduct
         LEFT JOIN discountcode dc ON pd.idDiscount = dc.idDiscount
         LEFT JOIN ( SELECT idProduct, MIN(productImagePath) AS productImagePath FROM productimage
@@ -107,7 +107,7 @@ class Product {
 
   static findById(db, id) {
     return new Promise((resolve, reject) => {
-      const query = "SELECT * FROM Product WHERE idProduct = ?";
+      const query = "SELECT * FROM product WHERE idProduct = ?";
       db.query(query, [id], (err, res) => {
         if (err) {
           reject(err);
@@ -143,7 +143,7 @@ class Product {
 
   static findByName(db, { name }) {
     return new Promise((resolve, reject) => {
-      const query = "SELECT * FROM Product WHERE productName LIKE ?";
+      const query = "SELECT * FROM product WHERE productName LIKE ?";
       db.query(query, [`%${name}%`], (err, res) => {
         if (err) {
           reject(err);
