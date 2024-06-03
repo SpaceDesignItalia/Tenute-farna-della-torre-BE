@@ -3,7 +3,7 @@
 const fs = require("fs");
 const path = require("path");
 
-class product {
+class Product {
   constructor(
     idProduct,
     productName,
@@ -29,7 +29,7 @@ class product {
   static getAll(db) {
     return new Promise((resolve, reject) => {
       const query =
-        "SELECT p.idProduct, p.productName, p.productAmount, p.unitPrice, dc.idDiscount,dc.discountCode FROM product p LEFT JOIN productdiscount pd ON p.idProduct = pd.idProduct LEFT JOIN discountcode dc ON pd.idDiscount = dc.idDiscount";
+        "SELECT p.idProduct, p.productName, p.productAmount, p.unitPrice, dc.idDiscount,dc.discountCode FROM Product p LEFT JOIN productdiscount pd ON p.idProduct = pd.idProduct LEFT JOIN discountcode dc ON pd.idDiscount = dc.idDiscount";
 
       db.query(query, (err, res) => {
         if (err) {
@@ -52,7 +52,7 @@ class product {
             discountCode,
           } = product;
 
-          return new product(
+          return new Product(
             idProduct,
             productName,
             productDescription,
@@ -70,7 +70,7 @@ class product {
 
   static getAllEcommerce(db) {
     return new Promise((resolve, reject) => {
-      const query = `SELECT DISTINCT p.idProduct, p.productName, p.productDescription, p.productAmount, p.unitPrice, dc.value, dc.idDiscountType, dc.startDate, pi.productImagePath FROM product p
+      const query = `SELECT DISTINCT p.idProduct, p.productName, p.productDescription, p.productAmount, p.unitPrice, dc.value, dc.idDiscountType, dc.startDate, pi.productImagePath FROM Product p
         LEFT JOIN productdiscount pd ON p.idProduct = pd.idProduct
         LEFT JOIN discountcode dc ON pd.idDiscount = dc.idDiscount
         LEFT JOIN ( SELECT idProduct, MIN(productImagePath) AS productImagePath FROM productimage
@@ -107,7 +107,7 @@ class product {
 
   static findById(db, id) {
     return new Promise((resolve, reject) => {
-      const query = "SELECT * FROM product WHERE idProduct = ?";
+      const query = "SELECT * FROM Product WHERE idProduct = ?";
       db.query(query, [id], (err, res) => {
         if (err) {
           reject(err);
@@ -127,7 +127,7 @@ class product {
           discountCode,
         } = res[0];
 
-        const findedProduct = new product(
+        const findedProduct = new Product(
           idProduct,
           productName,
           productDescription,
@@ -143,7 +143,7 @@ class product {
 
   static findByName(db, { name }) {
     return new Promise((resolve, reject) => {
-      const query = "SELECT * FROM product WHERE productName LIKE ?";
+      const query = "SELECT * FROM Product WHERE productName LIKE ?";
       db.query(query, [`%${name}%`], (err, res) => {
         if (err) {
           reject(err);
@@ -164,7 +164,7 @@ class product {
             discountCode,
           } = product;
 
-          return new product(
+          return new Product(
             idProduct,
             productName,
             productDescription,
@@ -219,7 +219,7 @@ class product {
 
   static findPhotosById(db, id) {
     return new Promise((resolve, reject) => {
-      const query = "SELECT * FROM productimage WHERE idProduct = ?";
+      const query = "SELECT * FROM productImage WHERE idProduct = ?";
       db.query(query, [id], (err, res) => {
         if (err) {
           reject(err);
@@ -275,7 +275,7 @@ class product {
     return new Promise((resolve, reject) => {
       let query = `
         SELECT p.idProduct, p.productName, p.productDescription, p.productAmount, p.unitPrice, dc.value, dc.idDiscountType, dc.startDate, pi.productImagePath
-        FROM product p
+        FROM Product p
         LEFT JOIN productdiscount pd ON p.idProduct = pd.idProduct
         LEFT JOIN discountcode dc ON pd.idDiscount = dc.idDiscount
         LEFT JOIN (
@@ -411,13 +411,11 @@ class product {
     id,
     editedProduct,
     oldPhotos,
-    oldLabelPhoto,
-    editedProductPhoto,
-    editedLabelPhoto
+    editedProductPhoto
   ) {
     return new Promise((resolve, reject) => {
       const getOldPhotosQuery =
-        "SELECT COUNT(*) FROM productimage WHERE idProduct = ?";
+        "SELECT COUNT(*) FROM productImage WHERE idProduct = ?";
       var oldPhotosCount;
       db.query(getOldPhotosQuery, [id], (err, result) => {
         oldPhotosCount = result[0];
@@ -429,7 +427,7 @@ class product {
       ) {
         // Eliminazione delle foto del prodotto dal database
         const getOldPhotosQuery =
-          "SELECT productImagePath FROM productimage WHERE idProduct = ? AND productImagePath NOT IN (?)";
+          "SELECT productImagePath FROM productImage WHERE idProduct = ? AND productImagePath NOT IN (?)";
         db.query(getOldPhotosQuery, [id, oldPhotos], (err, result) => {
           if (err) {
             reject(err);
@@ -449,33 +447,17 @@ class product {
         });
 
         const oldPhotosQuery =
-          "DELETE FROM productimage WHERE idProduct = ? AND productImagePath NOT IN (?)";
+          "DELETE FROM productImage WHERE idProduct = ? AND productImagePath NOT IN (?)";
         db.query(oldPhotosQuery, [id, oldPhotos], (err, result) => {});
 
-        const oldLabelPhotoQuery =
-          "DELETE FROM productlabel WHERE idProduct = ?";
-        if (oldLabelPhoto) {
-          db.query(oldLabelPhotoQuery, [id], (err, result) => {});
-        }
-
         const addNewPhoto =
-          "INSERT INTO productimage (idProduct, productImagePath) VALUES (?, ?)";
+          "INSERT INTO productImage (idProduct, productImagePath) VALUES (?, ?)";
         editedProductPhoto.forEach((photo) => {
           db.query(addNewPhoto, [id, photo.filename], (err, result) => {});
         });
 
-        const addNewLabelPhoto =
-          "INSERT INTO productlabel (idProduct, path) VALUES (?, ?)";
-        if (editedLabelPhoto) {
-          db.query(
-            addNewLabelPhoto,
-            [id, editedLabelPhoto.filename],
-            (err, result) => {}
-          );
-        }
-
         const updateProductQuery =
-          "UPDATE product SET productName = ?, productDescription = ?, productAmount = ?, unitPrice = ? WHERE idProduct = ?";
+          "UPDATE Product SET productName = ?, productDescription = ?, productAmount = ?, unitPrice = ? WHERE idProduct = ?";
         db.query(
           updateProductQuery,
           [
@@ -498,7 +480,7 @@ class product {
       } else {
         // Aggiorna i dati del prodotto
         const updateProductQuery =
-          "UPDATE product SET productName = ?, productDescription = ?, productAmount = ?, unitPrice = ? WHERE idProduct = ?";
+          "UPDATE Product SET productName = ?, productDescription = ?, productAmount = ?, unitPrice = ? WHERE idProduct = ?";
         db.query(
           updateProductQuery,
           [
@@ -523,8 +505,8 @@ class product {
   static deleteProduct(db, id) {
     return new Promise((resolve, reject) => {
       const getProductPhotosQuery =
-        "SELECT productImagePath FROM productimage WHERE idProduct = ?";
-      const deleteProductQuery = "DELETE FROM product WHERE idProduct = ?";
+        "SELECT productImagePath FROM productImage WHERE idProduct = ?";
+      const deleteProductQuery = "DELETE FROM Product WHERE idProduct = ?";
 
       db.query(getProductPhotosQuery, [id], (photoErr, photoResults) => {
         if (photoErr) {
@@ -565,4 +547,4 @@ class product {
   }
 }
 
-module.exports = product;
+module.exports = Product;
