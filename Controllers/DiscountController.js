@@ -31,9 +31,10 @@ const getAllCodes = async (res, db) => {
 };
 
 const getDiscountByCode = async (res, req, db) => {
-  const code = req.params.code;
+  const Code = req.params.Code;
+  console.log(Code);
   try {
-    const discount = await Discount.getDiscountByCode(db, code);
+    const discount = await Discount.getDiscountByCode(db, Code);
 
     if (!discount) {
       return res.status(404).json({ error: "Nessuno sconto trovato" });

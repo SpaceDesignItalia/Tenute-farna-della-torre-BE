@@ -15,7 +15,22 @@ class Analytic {
 
   static async getStocksNumber(db) {
     return new Promise((resolve, reject) => {
-      const query = "SELECT SUM(productAmount) as StocksNumber FROM product";
+      const query = "SELECT COUNT(*) as StocksNumber FROM product";
+      db.query(query, (err, results) => {
+        if (err) {
+          console.error("Errore durante la query:", err);
+          return reject("Errore interno del server");
+        } else {
+          return resolve(results);
+        }
+      });
+    });
+  }
+
+  static async getUsersToVerify(db) {
+    return new Promise((resolve, reject) => {
+      const query =
+        "SELECT COUNT(*) as UsersNumber FROM customer WHERE idStatus = 1";
       db.query(query, (err, results) => {
         if (err) {
           console.error("Errore durante la query:", err);

@@ -36,6 +36,7 @@ const {
   loadDocument,
   isDefault,
   updateShippingDetail,
+  getCustomerByEmail,
 } = require("../Controllers/CustomerController");
 
 const customerRoutes = (db) => {
@@ -60,6 +61,9 @@ const customerRoutes = (db) => {
     getAllShipping(req, res, db);
   });
 
+  router.get("/GetCustomerByEmail", (req, res) => {
+    getCustomerByEmail(req, res, db);
+  });
   router.get("/CheckSession", async (req, res) => {
     CheckSession(req, res);
   });

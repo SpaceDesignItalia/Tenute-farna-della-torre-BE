@@ -87,9 +87,9 @@ class Discount {
   static async getDiscountByCode(db, code) {
     return new Promise((resolve, reject) => {
       const query =
-        "SELECT * FROM DiscountCode dc INNER JOIN DiscountType dt ON dc.idDiscountType = dt.idDiscountType WHERE discountCode = ?";
+        "SELECT * FROM DiscountCode dc INNER JOIN DiscountType dt ON dc.idDiscountType = dt.idDiscountType WHERE discountCode LIKE ?";
 
-      db.query(query, [code], (err, res) => {
+      db.query(query, [`%${code}%`], (err, res) => {
         if (err) {
           reject(err);
           return;
