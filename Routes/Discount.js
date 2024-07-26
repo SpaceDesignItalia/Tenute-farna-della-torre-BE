@@ -22,7 +22,7 @@ const discountRoutes = (db) => {
     getAllCodes(res, db);
   });
 
-  router.get("GetDiscountByCode/:code", async (req, res) => {
+  router.get("/GetDiscountByCode/:Code", async (req, res) => {
     getDiscountByCode(res, req, db);
   });
 

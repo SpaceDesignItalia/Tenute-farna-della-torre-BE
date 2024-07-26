@@ -61,6 +61,23 @@ class Customer {
     });
   }
 
+  static async getCustomerByEmail(db, customerEmail) {
+    return new Promise((resolve, reject) => {
+      const query = `SELECT c.idCustomer, c.name, c.surname, c.mail, c.phone, cs.idStatus, cs.statusName FROM customer c INNER JOIN customerstatus cs on c.idStatus = cs.idStatus WHERE c.mail LIKE ?`;
+      db.query(query, [`%${customerEmail}%`], (err, results) => {
+        if (err) {
+          console.error(
+            "Errore durante la query per ottenere le informazioni di spedizione:",
+            err
+          );
+          return reject("Errore interno del server");
+        } else {
+          return resolve(results);
+        }
+      });
+    });
+  }
+
   static async getCustomerById(db, id) {
     return new Promise((resolve, reject) => {
       const query = `SELECT c.idCustomer, c.name, c.surname, c.mail, c.phone, cs.idStatus, cs.statusName, dt.documentType FROM customer c
