@@ -448,35 +448,40 @@ class Product {
 
         const oldPhotosQuery =
           "DELETE FROM productimage WHERE idProduct = ? AND productImagePath NOT IN (?)";
-        db.query(oldPhotosQuery, [id, oldPhotos], (err, result) => {});
-
-        const addNewPhoto =
-          "INSERT INTO productimage (idProduct, productImagePath) VALUES (?, ?)";
-        editedProductPhoto.forEach((photo) => {
-          db.query(addNewPhoto, [id, photo.filename], (err, result) => {});
-        });
-
-        const updateProductQuery =
-          "UPDATE product SET productName = ?, productDescription = ?, productAmount = ?, unitPrice = ? WHERE idProduct = ?";
-        db.query(
-          updateProductQuery,
-          [
-            editedProduct.productName,
-            editedProduct.productDescription,
-            editedProduct.productAmount,
-            editedProduct.unitPrice,
-            id,
-          ],
-          (updateErr, updateResult) => {
-            if (updateErr) {
-              reject(updateErr);
-              return;
-            }
-            resolve(updateResult.affectedRows > 0); // True se il prodotto è stato aggiornato, altrimenti False
+        db.query(oldPhotosQuery, [id, oldPhotos], (err, result) => {
+          if (err) {
+            reject(false);
           }
-        );
+          const addNewPhoto =
+            "INSERT INTO productimage (idProduct, productImagePath) VALUES (?, ?)";
+          editedProductPhoto.forEach((photo) => {
+            db.query(addNewPhoto, [id, photo.filename], (err, result) => {
+              if (err) {
+                reject(false);
+              }
+              const updateProductQuery =
+                "UPDATE product SET productName = ?, productDescription = ?, productAmount = ?, unitPrice = ? WHERE idProduct = ?";
+              db.query(
+                updateProductQuery,
+                [
+                  editedProduct.productName,
+                  editedProduct.productDescription,
+                  editedProduct.productAmount,
+                  editedProduct.unitPrice,
+                  id,
+                ],
+                (updateErr, updateResult) => {
+                  if (updateErr) {
+                    reject(updateErr);
+                  }
+                  resolve(true); // True se il prodotto è stato aggiornato, altrimenti False
+                }
+              );
+            });
+          });
 
-        resolve(true);
+          resolve(true);
+        });
       } else {
         // Aggiorna i dati del prodotto
         const updateProductQuery =
