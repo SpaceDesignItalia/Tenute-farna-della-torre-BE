@@ -266,7 +266,7 @@ class Product {
             path,
           };
         });
-        resolve(labels);
+        resolve(labels[0]);
       });
     });
   }
@@ -411,8 +411,10 @@ class Product {
     id,
     editedProduct,
     oldPhotos,
-    editedProductPhoto
+    editedProductPhoto,
+    editedLabelPhoto
   ) {
+    console.log(editedLabelPhoto);
     return new Promise((resolve, reject) => {
       const getOldPhotosQuery =
         "SELECT COUNT(*) FROM productimage WHERE idProduct = ?";
@@ -452,36 +454,64 @@ class Product {
           if (err) {
             reject(false);
           }
-          const addNewPhoto =
-            "INSERT INTO productimage (idProduct, productImagePath) VALUES (?, ?)";
-          editedProductPhoto.forEach((photo) => {
-            db.query(addNewPhoto, [id, photo.filename], (err, result) => {
-              if (err) {
-                reject(false);
-              }
-              const updateProductQuery =
-                "UPDATE product SET productName = ?, productDescription = ?, productAmount = ?, unitPrice = ? WHERE idProduct = ?";
-              db.query(
-                updateProductQuery,
-                [
-                  editedProduct.productName,
-                  editedProduct.productDescription,
-                  editedProduct.productAmount,
-                  editedProduct.unitPrice,
-                  id,
-                ],
-                (updateErr, updateResult) => {
-                  if (updateErr) {
-                    reject(updateErr);
-                  }
-                  resolve(true); // True se il prodotto è stato aggiornato, altrimenti False
+          if (editedProductPhoto) {
+            const addNewPhoto =
+              "INSERT INTO productimage (idProduct, productImagePath) VALUES (?, ?)";
+            editedProductPhoto.forEach((photo) => {
+              db.query(addNewPhoto, [id, photo.filename], (err, result) => {
+                if (err) {
+                  reject(false);
                 }
-              );
+                const updateProductQuery =
+                  "UPDATE product SET productName = ?, productDescription = ?, productAmount = ?, unitPrice = ? WHERE idProduct = ?";
+                db.query(
+                  updateProductQuery,
+                  [
+                    editedProduct.productName,
+                    editedProduct.productDescription,
+                    editedProduct.productAmount,
+                    editedProduct.unitPrice,
+                    id,
+                  ],
+                  (updateErr, updateResult) => {
+                    if (updateErr) {
+                      reject(updateErr);
+                    }
+                  }
+                );
+              });
             });
-          });
-
-          resolve(true);
+          }
         });
+
+        const deleteOldLabelQuery =
+          "DELETE FROM productlabel WHERE idProduct = ?";
+        db.query(deleteOldLabelQuery, [id], (err, result) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+        });
+
+        console.log("ed: " + editedLabelPhoto);
+        if (editedLabelPhoto) {
+          const updateLabelQuery =
+            "INSERT INTO productlabel (idProduct, path) VALUES (?, ?)";
+          console.log(editedLabelPhoto.filename);
+          db.query(
+            updateLabelQuery,
+            [id, editedLabelPhoto.filename],
+            (err, result) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+              resolve(true); // True se l'etichetta è stata aggiornata, altrimenti False
+            }
+          );
+        } else {
+          resolve(true);
+        }
       } else {
         // Aggiorna i dati del prodotto
         const updateProductQuery =

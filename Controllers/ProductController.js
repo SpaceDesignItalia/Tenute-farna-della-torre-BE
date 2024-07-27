@@ -169,8 +169,12 @@ const editProduct = async (req, res, db) => {
   const editedProduct = req.body;
   const oldPhotos = req.body.oldPhotos;
   const editedProductPhoto = req.files;
-  const oldLabelPhoto = req.body.oldLabelPhoto;
-  const editedLabelPhoto = req.files[1];
+  let editedLabelPhoto = null;
+
+  if (editedProductPhoto && req.files[0].fieldname === "productLabel") {
+    editedLabelPhoto = req.files[0];
+    editedProductPhoto.splice(0, 1);
+  }
 
   try {
     // Chiamata alla funzione editProduct del modello Product
@@ -180,7 +184,6 @@ const editProduct = async (req, res, db) => {
       editedProduct,
       oldPhotos,
       editedProductPhoto,
-      oldLabelPhoto,
       editedLabelPhoto
     );
 
