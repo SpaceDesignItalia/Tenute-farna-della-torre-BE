@@ -350,12 +350,14 @@ class Product {
             // ID del nuovo prodotto inserito
             const newProductId = result.insertId;
 
-            // Query per inserire l'immagine del prodotto nella tabella productimage
             const insertImageQuery =
               "INSERT INTO productimage (idProduct, productImagePath) VALUES (?, ?)";
+            const insertLabelQuery =
+              "INSERT INTO productlabel (idProduct, path) VALUES (?, ?)";
 
-            newProductPhoto.forEach((photo) => {
-              if (photo.fieldname !== "productlabel") {
+            // Gestire le promesse per le immagini e le etichette
+            const imagePromises = newProductPhoto.map((photo) => {
+              return new Promise((resolve, reject) => {
                 db.query(
                   insertImageQuery,
                   [newProductId, photo.filename],
@@ -364,40 +366,39 @@ class Product {
                       reject(imageErr);
                       return;
                     }
-
-                    // Verifica se l'immagine è stata inserita correttamente
-                    if (imageResult.affectedRows > 0) {
-                      resolve(true); // Prodotto e immagine inseriti con successo
-                    } else {
-                      resolve(false); // Nessun record inserito per l'immagine
-                    }
+                    resolve(imageResult.affectedRows > 0);
                   }
                 );
-              }
+              });
             });
 
-            if (newLabelPhoto) {
-              const insertLabelQuery =
-                "INSERT INTO productlabel (idProduct, path) VALUES (?, ?)";
-              db.query(
-                insertLabelQuery,
-                [newProductId, newLabelPhoto.filename],
-                (labelErr, labelResult) => {
-                  if (labelErr) {
-                    reject(labelErr);
-                    return;
+            let labelPromise = Promise.resolve(true);
+            if (newLabelPhoto !== null) {
+              labelPromise = new Promise((resolve, reject) => {
+                db.query(
+                  insertLabelQuery,
+                  [newProductId, newLabelPhoto.filename],
+                  (labelErr, labelResult) => {
+                    if (labelErr) {
+                      reject(labelErr);
+                      return;
+                    }
+                    resolve(labelResult.affectedRows > 0);
                   }
-
-                  if (labelResult.affectedRows > 0) {
-                    resolve(true); // Prodotto e etichetta inseriti con successo
-                  } else {
-                    resolve(false); // Nessun record inserito per l'etichetta
-                  }
-                }
-              );
-            } else {
-              resolve(false); // Nessun record inserito per il prodotto
+                );
+              });
             }
+
+            // Attendere che tutte le promesse siano risolte
+            Promise.all([...imagePromises, labelPromise])
+              .then((results) => {
+                // Verifica se tutte le promesse sono state risolte con successo
+                const allSucceeded = results.every((result) => result === true);
+                resolve(allSucceeded);
+              })
+              .catch((error) => {
+                reject(error);
+              });
           } else {
             resolve(false); // Nessun record inserito per il prodotto
           }
@@ -418,86 +419,64 @@ class Product {
     return new Promise((resolve, reject) => {
       const getOldPhotosQuery =
         "SELECT COUNT(*) FROM productimage WHERE idProduct = ?";
-      var oldPhotosCount;
       db.query(getOldPhotosQuery, [id], (err, result) => {
-        oldPhotosCount = result[0];
-      });
+        if (err) {
+          reject(err);
+          return;
+        }
+        const oldPhotosCount = result[0]["COUNT(*)"];
 
-      if (
-        editedProductPhoto.length > 0 ||
-        oldPhotos.length !== oldPhotosCount
-      ) {
-        // Eliminazione delle foto del prodotto dal database
-        const getOldPhotosQuery =
-          "SELECT productImagePath FROM productimage WHERE idProduct = ? AND productImagePath NOT IN (?)";
-        db.query(getOldPhotosQuery, [id, oldPhotos], (err, result) => {
-          if (err) {
-            reject(err);
-            return;
-          }
+        if (
+          editedProductPhoto.length > 0 ||
+          oldPhotos.length !== oldPhotosCount
+        ) {
+          // Eliminazione delle foto del prodotto dal database
+          const getOldPhotosQuery =
+            "SELECT productImagePath FROM productimage WHERE idProduct = ? AND productImagePath NOT IN (?)";
+          db.query(getOldPhotosQuery, [id, oldPhotos], (err, result) => {
+            if (err) {
+              reject(err);
+              return;
+            }
 
-          if (result && result.length > 0) {
-            result.forEach((photo) => {
-              if (photo.productImagePath) {
-                // Verifica se la proprietà productImagePath è definita
-                fs.unlinkSync(
-                  path.join("public", "uploads", photo.productImagePath)
-                );
-              }
-            });
-          }
-        });
-
-        const oldPhotosQuery =
-          "DELETE FROM productimage WHERE idProduct = ? AND productImagePath NOT IN (?)";
-        db.query(oldPhotosQuery, [id, oldPhotos], (err, result) => {
-          if (err) {
-            reject(false);
-          }
-          if (editedProductPhoto) {
-            const addNewPhoto =
-              "INSERT INTO productimage (idProduct, productImagePath) VALUES (?, ?)";
-            editedProductPhoto.forEach((photo) => {
-              db.query(addNewPhoto, [id, photo.filename], (err, result) => {
-                if (err) {
-                  reject(false);
+            if (result && result.length > 0) {
+              result.forEach((photo) => {
+                if (photo.productImagePath) {
+                  // Verifica se la proprietà productImagePath è definita
+                  fs.unlinkSync(
+                    path.join("public", "uploads", photo.productImagePath)
+                  );
                 }
-                const updateProductQuery =
-                  "UPDATE product SET productName = ?, productDescription = ?, productAmount = ?, unitPrice = ? WHERE idProduct = ?";
-                db.query(
-                  updateProductQuery,
-                  [
-                    editedProduct.productName,
-                    editedProduct.productDescription,
-                    editedProduct.productAmount,
-                    editedProduct.unitPrice,
-                    id,
-                  ],
-                  (updateErr, updateResult) => {
-                    if (updateErr) {
-                      reject(updateErr);
-                    }
-                  }
-                );
               });
-            });
-          }
-        });
+            }
+          });
 
-        const deleteOldLabelQuery =
-          "DELETE FROM productlabel WHERE idProduct = ?";
-        db.query(deleteOldLabelQuery, [id], (err, result) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-        });
+          const oldPhotosQuery =
+            "DELETE FROM productimage WHERE idProduct = ? AND productImagePath NOT IN (?)";
+          db.query(oldPhotosQuery, [id, oldPhotos], (err, result) => {
+            if (err) {
+              reject(false);
+              return;
+            }
+            if (editedProductPhoto) {
+              const addNewPhoto =
+                "INSERT INTO productimage (idProduct, productImagePath) VALUES (?, ?)";
+              editedProductPhoto.forEach((photo) => {
+                db.query(addNewPhoto, [id, photo.filename], (err, result) => {
+                  if (err) {
+                    reject(false);
+                    return;
+                  }
+                });
+              });
+            }
+          });
+        }
 
-        console.log("ed: " + editedLabelPhoto);
-        if (editedLabelPhoto) {
+        if (editedLabelPhoto !== null) {
+          // Inserimento dell'etichetta aggiornata
           const updateLabelQuery =
             "INSERT INTO productlabel (idProduct, path) VALUES (?, ?)";
-          console.log(editedLabelPhoto.filename);
           db.query(
             updateLabelQuery,
             [id, editedLabelPhoto.filename],
@@ -506,14 +485,70 @@ class Product {
                 reject(err);
                 return;
               }
-              resolve(true); // True se l'etichetta è stata aggiornata, altrimenti False
+              // Ottenere e eliminare la vecchia etichetta dal server
+              const getOldLabel =
+                "SELECT * FROM productlabel WHERE idProduct = ? AND path <> ?";
+              db.query(
+                getOldLabel,
+                [id, editedLabelPhoto.filename],
+                (err, result) => {
+                  if (err) {
+                    reject(err);
+                    return;
+                  }
+                  if (result && result.length > 0) {
+                    result.forEach((label) => {
+                      fs.unlinkSync(path.join("public", "uploads", label.path));
+                    });
+                    // Eliminazione delle vecchie etichette dal database
+                    const deleteOldLabelQuery =
+                      "DELETE FROM productlabel WHERE idProduct = ? AND path <> ?";
+                    db.query(
+                      deleteOldLabelQuery,
+                      [id, editedLabelPhoto.filename],
+                      (err, result) => {
+                        if (err) {
+                          reject(err);
+                          return;
+                        }
+                        resolve(true);
+                      }
+                    );
+                  } else {
+                    resolve(true);
+                  }
+                }
+              );
             }
           );
         } else {
-          resolve(true);
+          // Eliminazione della vecchia etichetta se editedLabelPhoto è null
+          const getOldLabel = "SELECT * FROM productlabel WHERE idProduct = ?";
+          db.query(getOldLabel, [id], (err, result) => {
+            if (err) {
+              reject(err);
+              return;
+            }
+            if (result && result.length > 0) {
+              result.forEach((label) => {
+                fs.unlinkSync(path.join("public", "uploads", label.path));
+              });
+              const deleteOldLabelQuery =
+                "DELETE FROM productlabel WHERE idProduct = ?";
+              db.query(deleteOldLabelQuery, [id], (err, result) => {
+                if (err) {
+                  reject(err);
+                  return;
+                }
+                resolve(true);
+              });
+            } else {
+              resolve(true);
+            }
+          });
         }
-      } else {
-        // Aggiorna i dati del prodotto
+
+        // Aggiornamento dei dati del prodotto
         const updateProductQuery =
           "UPDATE product SET productName = ?, productDescription = ?, productAmount = ?, unitPrice = ? WHERE idProduct = ?";
         db.query(
@@ -533,7 +568,7 @@ class Product {
             resolve(updateResult.affectedRows > 0); // True se il prodotto è stato aggiornato, altrimenti False
           }
         );
-      }
+      });
     });
   }
 
@@ -541,8 +576,15 @@ class Product {
     return new Promise((resolve, reject) => {
       const getProductPhotosQuery =
         "SELECT productImagePath FROM productimage WHERE idProduct = ?";
+      const getProductLabelQuery =
+        "SELECT path FROM productlabel WHERE idProduct = ?";
       const deleteProductQuery = "DELETE FROM product WHERE idProduct = ?";
+      const deleteProductImagesQuery =
+        "DELETE FROM productimage WHERE idProduct = ?";
+      const deleteProductLabelsQuery =
+        "DELETE FROM productlabel WHERE idProduct = ?";
 
+      // First, retrieve product photos
       db.query(getProductPhotosQuery, [id], (photoErr, photoResults) => {
         if (photoErr) {
           reject(photoErr);
@@ -551,7 +593,7 @@ class Product {
 
         const photoPaths = photoResults.map((photo) => photo.productImagePath);
 
-        // Eliminazione dei file dal server
+        // Delete photo files from the server
         photoPaths.forEach((photoPath) => {
           const filePath = path.join("public", "uploads", photoPath);
 
@@ -563,19 +605,65 @@ class Product {
           });
         });
 
-        // Eliminazione del prodotto dal database
-        db.query(deleteProductQuery, [id], (err, result) => {
-          if (err) {
-            reject(err);
+        // Then, retrieve product labels
+        db.query(getProductLabelQuery, [id], (labelErr, labelResults) => {
+          if (labelErr) {
+            reject(labelErr);
             return;
           }
 
-          // Verifica se il prodotto è stato eliminato correttamente
-          if (result.affectedRows > 0) {
-            resolve(true);
-          } else {
-            resolve(false);
-          }
+          const labelPaths = labelResults.map((label) => label.path);
+
+          // Delete label files from the server
+          labelPaths.forEach((labelPath) => {
+            const labelFilePath = path.join("public", "uploads", labelPath);
+
+            fs.unlink(labelFilePath, (unlinkErr) => {
+              if (unlinkErr) {
+                reject(unlinkErr);
+                return;
+              }
+            });
+          });
+
+          // Finally, delete product from the database
+          db.query(deleteProductQuery, [id], (err, result) => {
+            if (err) {
+              reject(err);
+              return;
+            }
+
+            // Delete product images from the database
+            db.query(
+              deleteProductImagesQuery,
+              [id],
+              (imageErr, imageResult) => {
+                if (imageErr) {
+                  reject(imageErr);
+                  return;
+                }
+
+                // Delete product labels from the database
+                db.query(
+                  deleteProductLabelsQuery,
+                  [id],
+                  (labelErr, labelResult) => {
+                    if (labelErr) {
+                      reject(labelErr);
+                      return;
+                    }
+
+                    // Verify if the product was deleted correctly
+                    if (result.affectedRows > 0) {
+                      resolve(true);
+                    } else {
+                      resolve(false);
+                    }
+                  }
+                );
+              }
+            );
+          });
         });
       });
     });

@@ -140,15 +140,29 @@ const getFilteredAndSortedProducts = async (req, res, db) => {
 
 const createProduct = async (req, res, db) => {
   const newProduct = req.body;
-  const newProductPhoto = req.files;
-  const newLabelPhoto = req.files[0];
+  let newProductPhotos = req.files;
+  let newLabelPhoto = null;
 
+  // Scorrere tutti i file per trovare il file con il campo 'productLabel'
+  for (let file of req.files) {
+    if (file.fieldname === "productLabel") {
+      newLabelPhoto = file;
+      break;
+    }
+  }
+
+  // Rimuovi il file 'productLabel' dall'array dei file
+  if (newLabelPhoto) {
+    newProductPhotos = newProductPhotos.filter(
+      (file) => file.fieldname !== "productLabel"
+    );
+  }
   try {
     // Chiamata alla funzione createProduct del modello Product
     const result = await Product.createProduct(
       db,
       newProduct,
-      newProductPhoto,
+      newProductPhotos,
       newLabelPhoto
     );
 
@@ -171,7 +185,11 @@ const editProduct = async (req, res, db) => {
   const editedProductPhoto = req.files;
   let editedLabelPhoto = null;
 
-  if (editedProductPhoto && req.files[0].fieldname === "productLabel") {
+  console.log(req.files);
+  if (
+    editedProductPhoto.length !== 0 &&
+    req.files[0].fieldname === "productLabel"
+  ) {
     editedLabelPhoto = req.files[0];
     editedProductPhoto.splice(0, 1);
   }
