@@ -42,9 +42,9 @@ app.use(
     resave: false,
     cookie: {
       maxAge: 172800000,
-      secure: true,
-      httpOnly: true,
-      sameSite: "none",
+      secure: false,
+      httpOnly: false,
+      //sameSite: "none",
     },
   })
 );
@@ -78,7 +78,7 @@ const options = {
 // Crea un server HTTPS
 const server = https.createServer(options, app);
 // Avvia il server su HTTPS
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(
     `Server Express in ascolto sulla porta ${PORT} in modalità HTTPS`
   );
