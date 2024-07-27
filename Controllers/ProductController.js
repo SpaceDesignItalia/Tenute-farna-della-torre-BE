@@ -181,6 +181,7 @@ const createProduct = async (req, res, db) => {
 const editProduct = async (req, res, db) => {
   const id = req.params.id; // Ottengo l'id del prodotto dalla richiesta
   const editedProduct = req.body;
+  const deletedLabel = req.body.deletedLabel;
   const oldPhotos = req.body.oldPhotos;
   const editedProductPhoto = req.files;
   let editedLabelPhoto = null;
@@ -202,7 +203,8 @@ const editProduct = async (req, res, db) => {
       editedProduct,
       oldPhotos,
       editedProductPhoto,
-      editedLabelPhoto
+      editedLabelPhoto,
+      deletedLabel
     );
 
     // Verifica se il prodotto è stato modificato con successo
