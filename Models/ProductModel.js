@@ -413,7 +413,8 @@ class Product {
     editedProduct,
     oldPhotos,
     editedProductPhoto,
-    editedLabelPhoto
+    editedLabelPhoto,
+    deletedLabel
   ) {
     console.log(editedLabelPhoto);
     return new Promise((resolve, reject) => {
@@ -521,7 +522,9 @@ class Product {
               );
             }
           );
-        } else {
+        }
+
+        if (deletedLabel) {
           // Eliminazione della vecchia etichetta se editedLabelPhoto è null
           const getOldLabel = "SELECT * FROM productlabel WHERE idProduct = ?";
           db.query(getOldLabel, [id], (err, result) => {
