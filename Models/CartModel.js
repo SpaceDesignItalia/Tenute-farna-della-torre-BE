@@ -8,30 +8,43 @@ class Cart {
   static async addToCart(db, idProduct, idCustomer) {
     return new Promise((resolve, reject) => {
       try {
-        const selectQuery = `SELECT * FROM cart WHERE idProduct = ${idProduct} AND idCustomer = ${idCustomer}`;
-        db.query(selectQuery, (err, result) => {
+        const checkStockQuery = `SELECT productAmount FROM product WHERE idProduct = ${idProduct}`;
+        db.query(checkStockQuery, (err, result) => {
+          console.log(result[0].productAmount);
           if (err) {
             console.log(err);
             return reject("Errore interno del server");
           } else {
-            if (result.length > 0) {
-              const updateQuery = `UPDATE cart SET amount = amount + 1 WHERE idProduct = ${idProduct} AND idCustomer = ${idCustomer}`;
-              db.query(updateQuery, (err, result) => {
-                if (err) {
-                  console.log(err);
-                  return reject("Errore interno del server");
-                } else {
-                  return resolve("Prodotto aggiunto al carrello");
-                }
-              });
+            if (result[0].productAmount === 0) {
+              return reject("Prodotto non disponibile");
             } else {
-              const insertQuery = `INSERT INTO cart (idProduct, idCustomer, amount) VALUES (${idProduct}, ${idCustomer}, 1)`;
-              db.query(insertQuery, (err, result) => {
+              const selectQuery = `SELECT * FROM cart WHERE idProduct = ${idProduct} AND idCustomer = ${idCustomer}`;
+              db.query(selectQuery, (err, result) => {
                 if (err) {
                   console.log(err);
                   return reject("Errore interno del server");
                 } else {
-                  return resolve("Prodotto aggiunto al carrello");
+                  if (result.length > 0) {
+                    const updateQuery = `UPDATE cart SET amount = amount + 1 WHERE idProduct = ${idProduct} AND idCustomer = ${idCustomer}`;
+                    db.query(updateQuery, (err, result) => {
+                      if (err) {
+                        console.log(err);
+                        return reject("Errore interno del server");
+                      } else {
+                        return resolve("Prodotto aggiunto al carrello");
+                      }
+                    });
+                  } else {
+                    const insertQuery = `INSERT INTO cart (idProduct, idCustomer, amount) VALUES (${idProduct}, ${idCustomer}, 1)`;
+                    db.query(insertQuery, (err, result) => {
+                      if (err) {
+                        console.log(err);
+                        return reject("Errore interno del server");
+                      } else {
+                        return resolve("Prodotto aggiunto al carrello");
+                      }
+                    });
+                  }
                 }
               });
             }
@@ -64,13 +77,26 @@ class Cart {
   static async increaseAmount(db, idProduct, idCustomer) {
     return new Promise((resolve, reject) => {
       try {
-        const updateQuery = `UPDATE cart SET amount = amount + 1 WHERE idProduct = ${idProduct} AND idCustomer = ${idCustomer}`;
-        db.query(updateQuery, (err, result) => {
+        const checkStockQuery = `SELECT productAmount FROM product WHERE idProduct = ${idProduct}`;
+        db.query(checkStockQuery, (err, result) => {
+          console.log(result[0].productAmount);
           if (err) {
             console.log(err);
             return reject("Errore interno del server");
           } else {
-            return resolve("Quantità aumentata");
+            if (result[0].productAmount === 1) {
+              return reject("Prodotto non disponibile");
+            } else {
+              const updateQuery = `UPDATE cart SET amount = amount + 1 WHERE idProduct = ${idProduct} AND idCustomer = ${idCustomer}`;
+              db.query(updateQuery, (err, result) => {
+                if (err) {
+                  console.log(err);
+                  return reject("Errore interno del server");
+                } else {
+                  return resolve("Quantità aumentata");
+                }
+              });
+            }
           }
         });
       } catch (error) {
@@ -157,6 +183,14 @@ class Cart {
                 for (let i = 0; i < selectRresult.length; i++) {
                   const insertQuery = `INSERT INTO orderproduct (idOrder, idProduct, amount) VALUES (${idOrder}, ${selectRresult[i].idProduct}, ${selectRresult[i].amount})`;
                   db.query(insertQuery, (err, result) => {
+                    if (err) {
+                      console.log(err);
+                      return reject("Errore interno del server");
+                    }
+                  });
+
+                  const decreaseQuery = `UPDATE product SET productAmount = productAmount - ${selectRresult[i].amount} WHERE idProduct = ${selectRresult[i].idProduct}`;
+                  db.query(decreaseQuery, (err, result) => {
                     if (err) {
                       console.log(err);
                       return reject("Errore interno del server");
