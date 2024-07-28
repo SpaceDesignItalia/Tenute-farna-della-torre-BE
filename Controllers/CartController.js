@@ -59,10 +59,22 @@ const removeProduct = async (req, res, db) => {
   }
 };
 
+const completeOrder = async (req, res, db) => {
+  try {
+    const idCustomer = req.session.customer.id;
+    await Cart.completeOrder(db, idCustomer);
+    res.status(200).send("Order completed");
+  } catch (error) {
+    console.log(error);
+    res.status;
+  }
+};
+
 module.exports = {
   addToCart,
   getProductsByIdCustomer,
   increaseAmount,
   decreaseAmount,
   removeProduct,
+  completeOrder,
 };

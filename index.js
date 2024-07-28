@@ -13,6 +13,7 @@ const createStafferRoutes = require("./Routes/Staffer");
 const createCustomerRoutes = require("./Routes/Customer");
 const createAnalyticRoutes = require("./Routes/Analytic");
 const createCartRoutes = require("./Routes/Cart");
+const createOrderRoutes = require("./Routes/Order");
 
 const app = express();
 app.use(express.static("public"));
@@ -72,6 +73,9 @@ app.use("/Analytic", analyticRoutes);
 
 const cartRoutes = createCartRoutes(db);
 app.use("/Cart", cartRoutes);
+
+const orderRoutes = createOrderRoutes(db);
+app.use("/Order", orderRoutes);
 
 // Configura l'opzione per HTTPS
 const options = {

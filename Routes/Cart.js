@@ -7,6 +7,7 @@ const {
   increaseAmount,
   decreaseAmount,
   removeProduct,
+  completeOrder,
 } = require("../Controllers/CartController");
 
 const cartRoutes = (db) => {
@@ -28,6 +29,10 @@ const cartRoutes = (db) => {
 
   router.post("/RemoveProduct", (req, res) => {
     removeProduct(req, res, db);
+  });
+
+  router.post("/CompleteOrder", (req, res) => {
+    completeOrder(req, res, db);
   });
 
   return router;
