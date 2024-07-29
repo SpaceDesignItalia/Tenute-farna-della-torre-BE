@@ -1,6 +1,9 @@
 // productController.js
 
 const Product = require("../Models/ProductModel");
+const stripe = require("stripe")(
+  "sk_test_51Pgiq2IscqRNssazX9PTk3Hersuvd2DgYsVcIPCJIboizbzREk7buTDHc7YXmww84Lpqg0JOpeozOhCPTkLYFDBF00iagK7dEt"
+);
 
 const getProducts = async (res, db) => {
   try {
@@ -245,6 +248,7 @@ const deleteProduct = async (req, res, db) => {
     return res.status(500).json({ error: "Errore interno del server" });
   }
 };
+
 module.exports = {
   getProducts,
   getProductsEcommerce,
