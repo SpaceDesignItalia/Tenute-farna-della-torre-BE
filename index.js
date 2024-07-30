@@ -12,6 +12,8 @@ const createDiscountRoutes = require("./Routes/Discount");
 const createStafferRoutes = require("./Routes/Staffer");
 const createCustomerRoutes = require("./Routes/Customer");
 const createAnalyticRoutes = require("./Routes/Analytic");
+const createCartRoutes = require("./Routes/Cart");
+const createOrderRoutes = require("./Routes/Order");
 const createPaymentRoutes = require("./Routes/Payments");
 
 const app = express();
@@ -69,6 +71,12 @@ app.use("/Customer", customerRoutes);
 
 const analyticRoutes = createAnalyticRoutes(db);
 app.use("/Analytic", analyticRoutes);
+
+const cartRoutes = createCartRoutes(db);
+app.use("/Cart", cartRoutes);
+
+const orderRoutes = createOrderRoutes(db);
+app.use("/Order", orderRoutes);
 
 const paymentRoutes = createPaymentRoutes(db);
 app.use("/Payment", paymentRoutes);
