@@ -12,6 +12,8 @@ const createDiscountRoutes = require("./Routes/Discount");
 const createStafferRoutes = require("./Routes/Staffer");
 const createCustomerRoutes = require("./Routes/Customer");
 const createAnalyticRoutes = require("./Routes/Analytic");
+const createCartRoutes = require("./Routes/Cart");
+const createOrderRoutes = require("./Routes/Order");
 
 const app = express();
 app.use(express.static("public"));
@@ -42,9 +44,9 @@ app.use(
     resave: false,
     cookie: {
       maxAge: 172800000,
-      secure: true,
-      httpOnly: true,
-      sameSite: "none",
+      secure: false,
+      httpOnly: false,
+      //sameSite: "none",
     },
   })
 );
@@ -69,6 +71,12 @@ app.use("/Customer", customerRoutes);
 const analyticRoutes = createAnalyticRoutes(db);
 app.use("/Analytic", analyticRoutes);
 
+const cartRoutes = createCartRoutes(db);
+app.use("/Cart", cartRoutes);
+
+const orderRoutes = createOrderRoutes(db);
+app.use("/Order", orderRoutes);
+
 // Configura l'opzione per HTTPS
 const options = {
   key: fs.readFileSync("SSL/privatekey.key"),
@@ -78,7 +86,7 @@ const options = {
 // Crea un server HTTPS
 const server = https.createServer(options, app);
 // Avvia il server su HTTPS
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(
     `Server Express in ascolto sulla porta ${PORT} in modalità HTTPS`
   );
