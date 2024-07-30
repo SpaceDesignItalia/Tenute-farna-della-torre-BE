@@ -34,8 +34,7 @@ const createCheckoutSession = async (req, res) => {
         quantity: item.quantity,
       })),
       mode: "payment",
-      success_url:
-        "http://localhost:5173/order-confirmed?session_id={CHECKOUT_SESSION_ID}",
+      success_url: "http://localhost:5173/order-confirmed",
       cancel_url: "http://localhost:5173/checkout",
       customer_email: req.session.customer.email,
     });
