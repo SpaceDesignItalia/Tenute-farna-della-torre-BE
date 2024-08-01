@@ -1,21 +1,34 @@
 const Cart = require("../Models/CartModel");
 
-const addToCart = async (req, res, db) => {
+const getCartItemNumber = async (req, res, db) => {
   try {
-    const idProduct = req.body.idProduct;
-    const idCustomer = req.session.customer.id;
-    await Cart.addToCart(db, idProduct, idCustomer);
-    res.status(200).send("Product added to cart");
+    const idCustomer = req.session.customer.idCustomer;
+    const items = await Cart.getItemsNumber(db, idCustomer);
+    res.status(200).send(items);
   } catch (error) {
     console.log(error);
     res.status;
   }
 };
 
+const addToCart = async (req, res, db) => {
+  try {
+    const idProduct = req.body.idProduct;
+    const idCustomer = req.session.customer.idCustomer;
+    await Cart.addToCart(db, idProduct, idCustomer);
+    res.status(200).send("Product added to cart");
+  } catch (error) {
+    console.log(error);
+    res.status(500);
+  }
+};
+
 const getProductsByIdCustomer = async (req, res, db) => {
   try {
-    const idCustomer = req.session.customer.id;
-    const products = await Cart.getProductsByIdCustomer(db, idCustomer);
+    const products = await Cart.getProductsByIdCustomer(
+      db,
+      req.session.customer.idCustomer
+    );
     res.status(200).send(products);
   } catch (error) {
     console.log(error);
@@ -23,35 +36,45 @@ const getProductsByIdCustomer = async (req, res, db) => {
   }
 };
 
-const increaseAmount = async (req, res, db) => {
+const checkStock = async (req, res, db) => {
   try {
-    const idProduct = req.body.idProduct;
-    const idCustomer = req.session.customer.id;
-    await Cart.increaseAmount(db, idProduct, idCustomer);
-    res.status(200).send("Amount increased");
+    const idProduct = req.query.idProduct;
+    const stock = await Cart.checkStock(db, idProduct);
+    res.status(200).json({ stock: stock.productAmount });
   } catch (error) {
     console.log(error);
-    res.status;
+    res.status(500).send("Errore interno del server");
   }
 };
 
-const decreaseAmount = async (req, res, db) => {
+const updateAmount = async (req, res, db) => {
   try {
     const idProduct = req.body.idProduct;
-    const idCustomer = req.session.customer.id;
-    await Cart.decreaseAmount(db, idProduct, idCustomer);
-    res.status(200).send("Amount decreased");
+    const newAmount = req.body.amount;
+
+    const isStockAvailable = await Cart.checkStock(db, idProduct, newAmount);
+
+    if (!isStockAvailable) {
+      return res.status(400).send("Quantità non disponibile");
+    }
+
+    await Cart.updateAmount(
+      db,
+      idProduct,
+      req.session.customer.idCustomer,
+      newAmount
+    );
+    res.status(200).send("Quantità aggiornata");
   } catch (error) {
     console.log(error);
-    res.status;
+    res.status(500).send("Errore interno del server");
   }
 };
 
 const removeProduct = async (req, res, db) => {
   try {
     const idProduct = req.body.idProduct;
-    const idCustomer = req.session.customer.id;
-    await Cart.removeProduct(db, idProduct, idCustomer);
+    await Cart.removeProduct(db, idProduct, req.session.customer.idCustomer);
     res.status(200).send("Product removed from cart");
   } catch (error) {
     console.log(error);
@@ -61,8 +84,15 @@ const removeProduct = async (req, res, db) => {
 
 const completeOrder = async (req, res, db) => {
   try {
-    const idCustomer = req.session.customer.id;
-    await Cart.completeOrder(db, idCustomer);
+    const shippingId = req.body.shippingId;
+    const idPayment = req.body.idPayment;
+
+    await Cart.completeOrder(
+      db,
+      req.session.customer.idCustomer,
+      shippingId,
+      idPayment
+    );
     res.status(200).send("Order completed");
   } catch (error) {
     console.log(error);
@@ -73,8 +103,9 @@ const completeOrder = async (req, res, db) => {
 module.exports = {
   addToCart,
   getProductsByIdCustomer,
-  increaseAmount,
-  decreaseAmount,
+  checkStock,
+  updateAmount,
   removeProduct,
   completeOrder,
+  getCartItemNumber,
 };

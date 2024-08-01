@@ -4,10 +4,12 @@ const router = express.Router();
 const {
   addToCart,
   getProductsByIdCustomer,
-  increaseAmount,
-  decreaseAmount,
+  checkStock,
+  updateAmount,
   removeProduct,
   completeOrder,
+  getCartItemNumber,
+  getOrderByIdCustomerAndPaymentId,
 } = require("../Controllers/CartController");
 
 const cartRoutes = (db) => {
@@ -15,16 +17,22 @@ const cartRoutes = (db) => {
     addToCart(req, res, db);
   });
 
+  router.get("/GetCartItemNumber", (req, res) => {
+    getCartItemNumber(req, res, db);
+  });
+
+  router.get("/CheckStocks", (req, res) => {
+    checkStock(req, res, db);
+  });
+  router.get("/GetOrderByIdCustomerAndPaymentId", (req, res) => {
+    getOrderByIdCustomerAndPaymentId(req, res, db);
+  });
   router.get("/GetProductsByIdCustomer", (req, res) => {
     getProductsByIdCustomer(req, res, db);
   });
 
-  router.post("/IncreaseAmount", (req, res) => {
-    increaseAmount(req, res, db);
-  });
-
-  router.post("/DecreaseAmount", (req, res) => {
-    decreaseAmount(req, res, db);
+  router.post("/UpdateAmount", (req, res) => {
+    updateAmount(req, res, db);
   });
 
   router.post("/RemoveProduct", (req, res) => {
