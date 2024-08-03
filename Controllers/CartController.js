@@ -15,7 +15,8 @@ const addToCart = async (req, res, db) => {
   try {
     const idProduct = req.body.idProduct;
     const idCustomer = req.session.customer.idCustomer;
-    await Cart.addToCart(db, idProduct, idCustomer);
+    const unitPrice = req.body.unitPrice;
+    await Cart.addToCart(db, idProduct, idCustomer, unitPrice);
     res.status(200).send("Product added to cart");
   } catch (error) {
     console.log(error);
@@ -86,12 +87,14 @@ const completeOrder = async (req, res, db) => {
   try {
     const shippingId = req.body.shippingId;
     const idPayment = req.body.idPayment;
+    const idDiscount = req.body.idDiscount;
 
     await Cart.completeOrder(
       db,
       req.session.customer.idCustomer,
       shippingId,
-      idPayment
+      idPayment,
+      idDiscount
     );
     res.status(200).send("Order completed");
   } catch (error) {

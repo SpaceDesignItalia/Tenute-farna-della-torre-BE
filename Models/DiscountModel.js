@@ -20,7 +20,7 @@ class Discount {
   static async getAll(db) {
     return new Promise((resolve, reject) => {
       const query =
-        "SELECT * FROM DiscountCode dc INNER JOIN DiscountType dt ON dc.idDiscountType = dt.idDiscountType";
+        "SELECT * FROM discountcode dc INNER JOIN discounttype dt ON dc.idDiscountType = dt.idDiscountType";
 
       db.query(query, (err, res) => {
         if (err) {
@@ -61,7 +61,7 @@ class Discount {
 
   static async getAllCodes(db) {
     return new Promise((resolve, reject) => {
-      const query = "SELECT discountCode FROM DiscountCode";
+      const query = "SELECT discountCode FROM discountcode";
 
       db.query(query, (err, res) => {
         if (err) {
@@ -87,7 +87,7 @@ class Discount {
   static async getDiscountByCode(db, code) {
     return new Promise((resolve, reject) => {
       const query =
-        "SELECT * FROM DiscountCode dc INNER JOIN DiscountType dt ON dc.idDiscountType = dt.idDiscountType WHERE discountCode LIKE ?";
+        "SELECT * FROM discountcode dc INNER JOIN discounttype dt ON dc.idDiscountType = dt.idDiscountType WHERE discountCode LIKE ?";
 
       db.query(query, [`%${code}%`], (err, res) => {
         if (err) {
@@ -129,7 +129,7 @@ class Discount {
   static async getDiscountDataById(db, idDiscount) {
     return new Promise((resolve, reject) => {
       const query =
-        "SELECT * FROM DiscountCode dc INNER JOIN DiscountType dt ON dc.idDiscountType = dt.idDiscountType WHERE idDiscount = ?";
+        "SELECT * FROM discountcode dc INNER JOIN discounttype dt ON dc.idDiscountType = dt.idDiscountType WHERE idDiscount = ?";
 
       db.query(query, [idDiscount], (err, res) => {
         if (err) {
@@ -233,6 +233,30 @@ class Discount {
     });
   }
 
+  static checkDiscountCodeValidity(db, discountCode, idCustomer) {
+    return new Promise((resolve, reject) => {
+      const query = `SELECT * FROM discountcode dc WHERE dc.discountCode = ?
+      AND (dc.endDate IS NULL OR dc.endDate > CURDATE())
+      AND NOT EXISTS (
+        SELECT 1 
+        FROM productdiscount pd 
+        WHERE pd.idDiscount = dc.idDiscount
+      )
+      AND NOT EXISTS (
+        SELECT 1 
+        FROM orderdetails od 
+        WHERE od.idDiscount = dc.idDiscount AND idCustomer = ?
+      );`;
+
+      db.query(query, [discountCode, idCustomer], (error, result) => {
+        if (error) {
+          reject(error);
+        }
+        resolve(result);
+      });
+    });
+  }
+
   static createDiscount(discount, db) {
     return new Promise((resolve, reject) => {
       if (discount.assignedProducts) {
@@ -242,7 +266,7 @@ class Discount {
         const endDate = discount.discountEnd ? discount.discountEnd : null;
 
         const queryInsert =
-          "INSERT INTO DiscountCode (discountCode, idDiscountType, value, startDate, endDate) VALUES (?, ?, ?, ?, ?)";
+          "INSERT INTO discountcode (discountCode, idDiscountType, value, startDate, endDate) VALUES (?, ?, ?, ?, ?)";
         db.query(
           queryInsert,
           [
@@ -264,7 +288,7 @@ class Discount {
               const newDiscountId = resInsert.insertId;
 
               const query =
-                "INSERT INTO ProductDiscount (idProduct, idDiscount) VALUES (?, ?)";
+                "INSERT INTO productdiscount (idProduct, idDiscount) VALUES (?, ?)";
               db.query(query, [element, newDiscountId], (err, res) => {
                 if (err) {
                   reject(err);
@@ -282,7 +306,7 @@ class Discount {
 
         const endDate = discount.discountEnd ? discount.discountEnd : null;
         const query =
-          "INSERT INTO DiscountCode (discountCode, idDiscountType, value, startDate, endDate) VALUES (?, ?, ?, ?, ?)";
+          "INSERT INTO discountcode (discountCode, idDiscountType, value, startDate, endDate) VALUES (?, ?, ?, ?, ?)";
 
         db.query(
           query,
@@ -307,7 +331,7 @@ class Discount {
 
   static async deleteDiscount(idDiscount, db) {
     return new Promise((resolve, reject) => {
-      const query = "DELETE FROM DiscountCode WHERE idDiscount = ?";
+      const query = "DELETE FROM discountcode WHERE idDiscount = ?";
 
       db.query(query, [idDiscount], (err, res) => {
         if (err) {

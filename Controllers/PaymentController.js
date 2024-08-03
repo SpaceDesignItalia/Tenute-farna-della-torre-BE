@@ -17,9 +17,28 @@ const getPaymentConfig = async (req, res) => {
 };
 
 const createCheckoutSession = async (req, res) => {
-  const { products } = req.body;
+  const { products, discount } = req.body;
 
   try {
+    // Calcola il totale dei prodotti senza sconto
+    const subtotal = products.reduce(
+      (acc, item) => acc + item.cartPrice * item.amount,
+      0
+    );
+
+    // Calcola l'importo dello sconto
+    let discountAmount = 0;
+    if (discount) {
+      if (discount.idDiscountType === 1) {
+        // Sconto in valore fisso
+        discountAmount = discount.value * 100;
+      } else if (discount.idDiscountType === 2) {
+        // Sconto in percentuale
+        discountAmount = ((subtotal * discount.value) / 100) * 100;
+      }
+    }
+
+    // Crea la sessione di pagamento Stripe
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card", "paypal"],
       line_items: products.map((item) => ({
@@ -28,14 +47,18 @@ const createCheckoutSession = async (req, res) => {
           product_data: {
             name: item.productName,
           },
-          unit_amount: item.unitPrice * 100,
+          unit_amount: item.cartPrice * 100,
         },
         quantity: item.amount,
       })),
       mode: "payment",
+      discounts:
+        discountAmount > 0
+          ? [{ coupon: await createCoupon(discountAmount) }]
+          : [],
       success_url:
         "http://localhost:5173/order-confirmed/" +
-        req.session.customer.id +
+        req.session.customer.idCustomer +
         "/{CHECKOUT_SESSION_ID}",
       cancel_url: "http://localhost:5173/dashboard/orders?redirected=true",
       customer_email: req.session.customer.email,
@@ -46,6 +69,15 @@ const createCheckoutSession = async (req, res) => {
     console.log(error);
     res.status(500).json({ error: error.message });
   }
+};
+
+// Funzione per creare un coupon Stripe
+const createCoupon = async (amountOff) => {
+  const coupon = await stripe.coupons.create({
+    amount_off: amountOff,
+    currency: "eur",
+  });
+  return coupon.id;
 };
 
 const getCheckoutDetails = async (req, res) => {

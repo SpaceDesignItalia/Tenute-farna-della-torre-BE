@@ -17,37 +17,44 @@ class Cart {
       });
     });
   }
-  static async addToCart(db, idProduct, idCustomer) {
+
+  static async addToCart(db, idProduct, idCustomer, unitPrice) {
     return new Promise((resolve, reject) => {
       try {
         const checkStockQuery = `SELECT productAmount FROM product WHERE idProduct = ${idProduct}`;
-        db.query(checkStockQuery, (err, result) => {
-          console.log(result[0].productAmount);
+        db.query(checkStockQuery, (err, stockResult) => {
           if (err) {
             console.log(err);
             return reject("Errore interno del server");
           } else {
-            if (result[0].productAmount === 0) {
+            if (stockResult[0].productAmount === 0) {
               return reject("Prodotto non disponibile");
             } else {
               const selectQuery = `SELECT * FROM cart WHERE idProduct = ${idProduct} AND idCustomer = ${idCustomer}`;
-              db.query(selectQuery, (err, result) => {
+              db.query(selectQuery, (err, cartResult) => {
                 if (err) {
                   console.log(err);
                   return reject("Errore interno del server");
                 } else {
-                  if (result.length > 0) {
-                    const updateQuery = `UPDATE cart SET amount = amount + 1 WHERE idProduct = ${idProduct} AND idCustomer = ${idCustomer}`;
-                    db.query(updateQuery, (err, result) => {
-                      if (err) {
-                        console.log(err);
-                        return reject("Errore interno del server");
-                      } else {
-                        return resolve("Prodotto aggiunto al carrello");
-                      }
-                    });
+                  if (cartResult.length > 0) {
+                    const currentAmount = cartResult[0].amount;
+                    if (currentAmount >= 8) {
+                      return reject(
+                        "Non è possibile aggiungere più di 8 unità di questo prodotto al carrello"
+                      );
+                    } else {
+                      const updateQuery = `UPDATE cart SET amount = amount + 1 WHERE idProduct = ${idProduct} AND idCustomer = ${idCustomer}`;
+                      db.query(updateQuery, (err, result) => {
+                        if (err) {
+                          console.log(err);
+                          return reject("Errore interno del server");
+                        } else {
+                          return resolve("Prodotto aggiunto al carrello");
+                        }
+                      });
+                    }
                   } else {
-                    const insertQuery = `INSERT INTO cart (idProduct, idCustomer, amount) VALUES (${idProduct}, ${idCustomer}, 1)`;
+                    const insertQuery = `INSERT INTO cart (idProduct, idCustomer, cartPrice, amount) VALUES (${idProduct}, ${idCustomer}, ${unitPrice}, 1)`;
                     db.query(insertQuery, (err, result) => {
                       if (err) {
                         console.log(err);
@@ -64,6 +71,7 @@ class Cart {
         });
       } catch (error) {
         console.log(error);
+        return reject("Errore interno del server");
       }
     });
   }
@@ -73,18 +81,25 @@ class Cart {
       try {
         // Query per ottenere i prodotti nel carrello con i dettagli
         const selectQuery = `
-          SELECT 
-            cart.idProduct, 
-            cart.amount, 
-            product.productAmount, 
-            product.unitPrice, 
-            product.productName,
-            productimage.productImagePath
-          FROM cart
-          INNER JOIN product ON cart.idProduct = product.idProduct
-          INNER JOIN productimage ON product.idProduct = productimage.idProduct
-          WHERE cart.idCustomer = ?
-        `;
+         SELECT 
+          cart.idProduct, 
+          cart.cartPrice,
+          cart.amount, 
+          product.productAmount, 
+          product.unitPrice, 
+          product.productName,
+          productimage.productImagePath,
+          dc.value,
+          dc.discountCode,
+          dc.startDate,
+          dc.endDate,
+          dc.idDiscountType
+        FROM cart
+        INNER JOIN product ON cart.idProduct = product.idProduct
+        LEFT JOIN productimage ON product.idProduct = productimage.idProduct
+        LEFT JOIN productdiscount pd ON pd.idProduct = cart.idProduct
+        LEFT JOIN discountcode dc ON dc.idDiscount = pd.idDiscount
+        WHERE cart.idCustomer = 1`;
 
         // Esegui la query
         db.query(selectQuery, [idCustomer], async (err, result) => {
@@ -199,7 +214,13 @@ class Cart {
     });
   }
 
-  static async completeOrder(db, idCustomer, shippingId, idPayment) {
+  static async completeOrder(
+    db,
+    idCustomer,
+    shippingId,
+    idPayment,
+    idDiscount
+  ) {
     return new Promise((resolve, reject) => {
       try {
         const selectQuery = `SELECT * FROM cart WHERE idCustomer = ${idCustomer}`;
@@ -209,18 +230,20 @@ class Cart {
             console.log(err);
             return reject("Errore interno del server");
           } else {
-            const insertDetailsQuery = `INSERT INTO orderdetails (idCustomer, idShippingDetail, idPayment) VALUES (?, ?, ?)`;
+            const insertDetailsQuery = `INSERT INTO orderdetails (idCustomer, idShippingDetail, idPayment, idDiscount) VALUES (?, ?, ?, ?)`;
             db.query(
               insertDetailsQuery,
-              [idCustomer, shippingId, idPayment],
+              [idCustomer, shippingId, idPayment, idDiscount],
               (err, result) => {
                 if (err) {
                   console.log(err);
                   return reject("Errore interno del server");
                 } else {
                   const idOrder = result.insertId;
+
                   for (let i = 0; i < selectRresult.length; i++) {
-                    const insertQuery = `INSERT INTO orderproduct (idOrder, idProduct, amount) VALUES (${idOrder}, ${selectRresult[i].idProduct}, ${selectRresult[i].amount})`;
+                    console.log(selectRresult[i]);
+                    const insertQuery = `INSERT INTO orderproduct (idOrder, idProduct, price, amount) VALUES (${idOrder}, ${selectRresult[i].idProduct}, ${selectRresult[i].cartPrice}, ${selectRresult[i].amount})`;
                     db.query(insertQuery, (err, result) => {
                       if (err) {
                         console.log(err);
