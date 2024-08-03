@@ -171,7 +171,7 @@ class Customer {
 
               if (isPasswordValid) {
                 const user = {
-                  id: results[0].idCustomer,
+                  idCustomer: results[0].idCustomer,
                   name: results[0].name,
                   surname: results[0].surname,
                   phone: results[0].phone,

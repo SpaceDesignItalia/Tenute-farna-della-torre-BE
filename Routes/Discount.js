@@ -8,6 +8,7 @@ const {
   getDiscountDataById,
   getDiscountProductsById,
   getProductsWithoutDiscount,
+  checkDiscountCodeValidity,
   creteDiscount,
   deleteDiscount,
 } = require("../Controllers/DiscountController");
@@ -36,6 +37,10 @@ const discountRoutes = (db) => {
 
   router.get("/GetProductWithoutDiscount", async (req, res) => {
     getProductsWithoutDiscount(res, db);
+  });
+
+  router.get("/CheckDiscountCodeValidity", async (req, res) => {
+    checkDiscountCodeValidity(req, res, db);
   });
 
   // Funzione per la creazione di un nuovo sconto

@@ -90,6 +90,29 @@ const getProductsWithoutDiscount = async (res, db) => {
   }
 };
 
+const checkDiscountCodeValidity = async (req, res, db) => {
+  try {
+    const discountCode = req.query.discountCode;
+    const idCustomer = req.session.customer.idCustomer;
+
+    console.log(req.query);
+    const discount = await Discount.checkDiscountCodeValidity(
+      db,
+      discountCode,
+      idCustomer
+    );
+
+    console.log(discount);
+    if (!discount || discount.length == 0) {
+      return res.status(404).json({ error: "Nessuno sconto trovato" });
+    }
+    res.status(200).json(discount);
+  } catch (err) {
+    console.error("Errore durante la ricerca dei prodotti:", err);
+    res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
 const creteDiscount = async (req, res, db) => {
   const newDiscount = req.body;
 
@@ -129,6 +152,7 @@ module.exports = {
   getDiscountDataById,
   getDiscountProductsById,
   getProductsWithoutDiscount,
+  checkDiscountCodeValidity,
   creteDiscount,
   deleteDiscount,
 };

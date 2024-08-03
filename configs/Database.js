@@ -9,9 +9,9 @@ require("dotenv").config();
   database: "tenutefarina",
 });*/
 const db = mysql.createPool({
-  host: "localhost",
-  user: "root",
-  password: "",
+  host: "lab.spacedesign-italia.it",
+  user: "spacedesigndev",
+  password: "imusRbRLPsStwgZa",
   database: "tenutefarina",
 });
 

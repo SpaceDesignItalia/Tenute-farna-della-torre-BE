@@ -6,7 +6,8 @@ const authenticateMiddleware = require("../middlewares/Authmiddleware");
 const {
   getPaymentConfig,
   createCheckoutSession,
-  getPaymentIntentData,
+  getCheckoutDetails,
+  resumeCheckoutSession,
 } = require("../Controllers/PaymentController");
 const paymentsRoutes = (db) => {
   // Funzioni per ottenere i dati delgli utenti
@@ -16,11 +17,15 @@ const paymentsRoutes = (db) => {
   });
 
   router.post("/CreateCheckoutSession", (req, res) => {
-    createCheckoutSession(req, res);
+    createCheckoutSession(req, res, db);
   });
 
-  router.get("/GetPaymentIntentData", async (req, res) => {
-    getPaymentIntentData(req, res);
+  router.get("/GetCheckoutDetails", async (req, res) => {
+    getCheckoutDetails(req, res);
+  });
+
+  router.post("/ResumeCheckoutSession", async (req, res) => {
+    resumeCheckoutSession(req, res);
   });
   return router;
 };
