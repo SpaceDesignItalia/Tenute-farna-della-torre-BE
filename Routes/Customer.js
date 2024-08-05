@@ -15,6 +15,7 @@ const upload = multer({ storage: storage });
 const {
   getAll,
   getAllShipping,
+  getShippingInfoById,
   getCustomerById,
   getImagesByCustomerId,
   getCustomersNumber,
@@ -59,6 +60,10 @@ const customerRoutes = (db) => {
 
   router.get("/GetAllShippingInfo", (req, res) => {
     getAllShipping(req, res, db);
+  });
+
+  router.get("/GetShippingInfoById/:id", (req, res) => {
+    getShippingInfoById(req, res, db);
   });
 
   router.get("/GetCustomerByEmail", (req, res) => {

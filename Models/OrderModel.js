@@ -5,7 +5,7 @@ class Order {
     this.idPayment = idPayment;
   }
 
-  static async getOrdersByIdCustomer(db, idCustomer) {
+  static async getAllOrders(db) {
     return new Promise((resolve, reject) => {
       try {
         const selectQuery = `SELECT * FROM orderdetails 

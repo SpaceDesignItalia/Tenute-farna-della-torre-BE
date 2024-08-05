@@ -61,6 +61,37 @@ class Customer {
     });
   }
 
+  static async getShippingInfoById(db, idShippingDetail) {
+    return new Promise((resolve, reject) => {
+      const query = `SELECT csd.idShippingDetail, csd.name, csd.address, csd.civicNumber, csd.cap, csd.city, csd.province, csd.nation FROM customershippingdetail csd WHERE csd.idShippingDetail = ?`;
+      db.query(query, [idShippingDetail], (err, results) => {
+        if (err) {
+          console.error(
+            "Errore durante la query per ottenere le informazioni di spedizione:",
+            err
+          );
+          return reject("Errore interno del server");
+        } else {
+          if (results.length === 1) {
+            const shippingInfo = {
+              id: results[0].idShippingDetail,
+              name: results[0].name,
+              address: results[0].address,
+              civicNumber: results[0].civicNumber,
+              cap: results[0].cap,
+              city: results[0].city,
+              province: results[0].province,
+              nation: results[0].nation,
+            };
+            return resolve(shippingInfo);
+          } else {
+            return reject("Informazioni di spedizione non trovate");
+          }
+        }
+      });
+    });
+  }
+
   static async getCustomerByEmail(db, customerEmail) {
     return new Promise((resolve, reject) => {
       const query = `SELECT c.idCustomer, c.name, c.surname, c.mail, c.phone, cs.idStatus, cs.statusName FROM customer c INNER JOIN customerstatus cs on c.idStatus = cs.idStatus WHERE c.mail LIKE ?`;
