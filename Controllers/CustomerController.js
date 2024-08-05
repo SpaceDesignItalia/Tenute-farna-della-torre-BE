@@ -25,6 +25,21 @@ const getAllShipping = async (req, res, db) => {
   }
 };
 
+const getShippingInfoById = async (req, res, db) => {
+  const id = req.params.id;
+
+  try {
+    const customer = await Customer.getShippingInfoById(db, id);
+    if (!customer) {
+      return res.status(404).json({ error: "Cliente non trovato" });
+    }
+
+    return res.status(200).json(customer);
+  } catch (error) {
+    return res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
 const getCustomerByEmail = async (req, res, db) => {
   const customerEmail = req.query.customerEmail;
 
@@ -437,6 +452,7 @@ const deleteShippingInfo = async (req, res, db) => {
 module.exports = {
   getAll,
   getAllShipping,
+  getShippingInfoById,
   getCustomerByEmail,
   getCustomerById,
   getImagesByCustomerId,
