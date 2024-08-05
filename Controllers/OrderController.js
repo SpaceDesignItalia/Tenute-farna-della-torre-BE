@@ -23,7 +23,7 @@ const getOrderById = async (req, res, db) => {
 
 const getOrdersByIdCustomer = async (req, res, db) => {
   try {
-    const idCustomer = req.session.customer.id;
+    const idCustomer = req.session.customer.idCustomer;
     const orders = await order.getOrdersByIdCustomer(db, idCustomer);
     res.status(200).send(orders);
   } catch (error) {
@@ -51,21 +51,6 @@ const deleteOrder = async (req, res, db) => {
   } catch (error) {
     console.log(error);
     res.status(500).send("Error deleting order");
-  }
-};
-
-const getOrderByIdCustomerAndPaymentId = async (req, res, db) => {
-  try {
-    const IdPayment = req.query.IdPayment;
-    const products = await order.getOrderByIdCustomerAndPaymentId(
-      db,
-      req.session.customer.idCustomer,
-      IdPayment
-    );
-    res.status(200).send(products);
-  } catch (error) {
-    console.log(error);
-    res.status;
   }
 };
 

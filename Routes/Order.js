@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const { getAllOrders } = require("../Controllers/OrderController");
+const { getAllOrdersData } = require("../Controllers/OrderController");
 const { getOrderById } = require("../Controllers/OrderController");
 const { getOrdersByIdCustomer } = require("../Controllers/OrderController");
 const { getProductsByIdOrder } = require("../Controllers/OrderController");
@@ -29,10 +30,6 @@ const orderRoutes = (db) => {
 
   router.delete("/DeleteOrder", (req, res) => {
     deleteOrder(req, res, db);
-  });
-
-  router.get("/GetProductsByIdOrder", (req, res) => {
-    getProductsByIdOrder(req, res, db);
   });
 
   router.get("/GetOrderDataByIdCustomerAndPaymentId", (req, res) => {
