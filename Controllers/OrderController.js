@@ -51,10 +51,13 @@ const deleteOrder = async (req, res, db) => {
   } catch (error) {
     console.log(error);
     res.status(500).send("Error deleting order");
+  }
+};
+
 const getOrderByIdCustomerAndPaymentId = async (req, res, db) => {
   try {
     const IdPayment = req.query.IdPayment;
-    const products = await Order.getOrderByIdCustomerAndPaymentId(
+    const products = await order.getOrderByIdCustomerAndPaymentId(
       db,
       req.session.customer.idCustomer,
       IdPayment
@@ -66,21 +69,11 @@ const getOrderByIdCustomerAndPaymentId = async (req, res, db) => {
   }
 };
 
-const getProductsByIdOrder = async (req, res, db) => {
-  try {
-    const idOrder = req.query.idOrder;
-    const products = await order.getProductsByIdOrder(db, idOrder);
-    res.status(200).send(products);
-  } catch (error) {
-    console.log(error);
-    res.status(500).send("Error getting products by order ID");
-  }
-};
 const getOrderDataByIdCustomerAndPaymentId = async (req, res, db) => {
   try {
     const idCustomer = req.session.customer.idCustomer;
     const IdPayment = req.query.IdPayment;
-    const products = await Order.getOrderDataByIdCustomerAndPaymentId(
+    const products = await order.getOrderDataByIdCustomerAndPaymentId(
       db,
       idCustomer,
       IdPayment
@@ -92,25 +85,6 @@ const getOrderDataByIdCustomerAndPaymentId = async (req, res, db) => {
   }
 };
 
-const deleteOrder = async (req, res, db) => {
-  try {
-    const idOrder = req.query.idOrder;
-    const message = await order.deleteOrder(db, idOrder);
-    res.status(200).send(message);
-  } catch (error) {
-    console.log(error);
-    res.status(500).send("Error deleting order");
-  }
-};
-
-module.exports = {
-  getAllOrders,
-  getOrderById,
-  getProductsByIdOrder,
-  getOrdersByIdCustomer,
-  deleteOrder,
-};
-
 module.exports = {
   getAllOrders,
   getOrderById,
@@ -118,6 +92,5 @@ module.exports = {
   getOrdersByIdCustomer,
   deleteOrder,
   getOrdersByIdCustomer,
-  getOrderByIdCustomerAndPaymentId,
   getOrderDataByIdCustomerAndPaymentId,
 };

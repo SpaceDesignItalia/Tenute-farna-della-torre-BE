@@ -7,13 +7,6 @@ const { getOrdersByIdCustomer } = require("../Controllers/OrderController");
 const { getProductsByIdOrder } = require("../Controllers/OrderController");
 const { deleteOrder } = require("../Controllers/OrderController");
 const {
-  getOrdersByIdCustomer,
-  getOrderByIdCustomerAndPaymentId,
-  getOrderDataByIdCustomerAndPaymentId,
-} = require("../Controllers/OrderController");
-const {
-  getOrdersByIdCustomer,
-  getOrderByIdCustomerAndPaymentId,
   getOrderDataByIdCustomerAndPaymentId,
 } = require("../Controllers/OrderController");
 
@@ -40,12 +33,6 @@ const orderRoutes = (db) => {
 
   router.get("/GetProductsByIdOrder", (req, res) => {
     getProductsByIdOrder(req, res, db);
-  });
-
-  router.delete("/DeleteOrder", (req, res) => {
-    deleteOrder(req, res, db);
-  router.get("/GetOrderByIdCustomerAndPaymentId", (req, res) => {
-    getOrderByIdCustomerAndPaymentId(req, res, db);
   });
 
   router.get("/GetOrderDataByIdCustomerAndPaymentId", (req, res) => {
