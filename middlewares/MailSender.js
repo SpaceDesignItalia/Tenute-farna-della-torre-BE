@@ -15,6 +15,92 @@ const transporter = nodemailer.createTransport({
   secure: true,
 });
 
+function sendAccountCreationMail(mail, name, surname) {
+  const sendAccountCreationMail = {
+    from: `Space Design Italia <${mailData.mail}>`,
+    to: mail,
+    subject: "Benvenuto su Tenute Farina della Torre",
+    text: `Ciao ${surname} ${name}, benvenuto su Tenute Farina della Torre!`,
+    html: `
+              <html>
+              <head>
+              <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+              <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+              <title>Benvenuto su Tenute Farina della Torre</title>
+              <style>
+                  /* Styling simile alle email precedenti */
+                  body {
+                      background-color: #f6f6f6;
+                      font-family: sans-serif;
+                      font-size: 14px;
+                      margin: 0;
+                      padding: 0;
+                  }
+                  .container {
+                      display: block;
+                      margin: 0 auto;
+                      max-width: 580px;
+                      padding: 10px;
+                      width: 580px;
+                  }
+                  .content {
+                      box-sizing: border-box;
+                      max-width: 580px;
+                      margin: 0 auto;
+                      padding: 20px;
+                      background-color: #ffffff;
+                      border-radius: 3px;
+                  }
+                  h1 {
+                      font-size: 24px;
+                      font-weight: 300;
+                      text-align: center;
+                      margin-bottom: 20px;
+                  }
+                  p {
+                      font-size: 16px;
+                      margin-bottom: 20px;
+                  }
+                  .btn {
+                      background-color: #d0a46c;
+                      color: #ffffff;
+                      padding: 10px 20px;
+                      text-decoration: none;
+                      border-radius: 5px;
+                      display: inline-block;
+                      text-align: center;
+                  }
+                  .footer {
+                      text-align: center;
+                      margin-top: 20px;
+                      font-size: 12px;
+                      color: #999999;
+                  }
+              </style>
+              </head>
+              <body>
+              <div class="container">
+                  <div class="content">
+                      <h1>Benvenuto, ${surname} ${name}!</h1>
+                      <p>Grazie per esserti registrato su Tenute Farina della Torre. Siamo entusiasti di averti con noi.</p>
+                  </div>
+                  <div class="footer">
+                      Inviato da <a href="https://www.tenutefarina.it">Tenute Farina della Torre</a>.
+                  </div>
+              </div>
+              </body>
+              </html>
+          `,
+  };
+
+  transporter.sendMail(sendAccountCreationMail, (error, info) => {
+    if (error) {
+      return console.log(error);
+    }
+    console.log("Account creation email sent: %s", info.messageId);
+  });
+}
+
 function sendRecoverMail(mail, name, surname, sid) {
   const sendRecoverMail = {
     from: `Space Design Italia  <${mail}>`,
@@ -783,7 +869,7 @@ function sendDeleteAccount(mail, name, surname) {
                             <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                             <tr>
                                 <td>
-                                <p>Il tuo account su Tenute Farina della torre è stato cancellato. <br />
+                                <p>
                                 Ciao ${surname} ${name}, abbiamo eliminato il tuo account perché non rispettava le linee guida. Se pensi che ci sia stato un errore, contatta l'assistenza.</p>
                                 </td>
                             </tr>
@@ -822,4 +908,8 @@ function sendDeleteAccount(mail, name, surname) {
   });
 }
 
-module.exports = { sendRecoverMail, sendDeleteAccount };
+module.exports = {
+  sendAccountCreationMail,
+  sendRecoverMail,
+  sendDeleteAccount,
+};

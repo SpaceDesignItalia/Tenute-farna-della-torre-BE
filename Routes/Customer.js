@@ -133,8 +133,7 @@ const customerRoutes = (db) => {
     isDefault(req, res, db);
   });
 
-  router.delete("/DeleteCustomer/:id", (req, res) => {
-    console.log("Test");
+  router.delete("/DeleteCustomer", (req, res) => {
     DeleteAccount(req, res, db);
   });
 

@@ -1,17 +1,22 @@
 const express = require("express");
 const router = express.Router();
 
-const { getAllOrders } = require("../Controllers/OrderController");
-const { getAllOrdersData } = require("../Controllers/OrderController");
-const { getOrderById } = require("../Controllers/OrderController");
-const { getOrdersByIdCustomer } = require("../Controllers/OrderController");
-const { getProductsByIdOrder } = require("../Controllers/OrderController");
-const { deleteOrder } = require("../Controllers/OrderController");
 const {
   getOrderDataByIdCustomerAndPaymentId,
+  getAllOrders,
+  getAllOrdersData,
+  getOrderById,
+  getOrdersByIdCustomer,
+  getProductsByIdOrder,
+  setTrakingLink,
+  deleteOrder,
 } = require("../Controllers/OrderController");
 
 const orderRoutes = (db) => {
+  router.put("/SetTrakingLink", (req, res) => {
+    setTrakingLink(req, res, db);
+  });
+
   router.get("/GetAllOrders", (req, res) => {
     getAllOrders(req, res, db);
   });

@@ -187,7 +187,7 @@ class Customer {
   static async login(req, db, email, password) {
     return new Promise((resolve, reject) => {
       const query =
-        "SELECT idCustomer, name, surname, phone, mail, password FROM customer WHERE mail = ?";
+        "SELECT idCustomer, name, surname, phone, mail, idStatus, password FROM customer WHERE mail = ?";
       db.query(query, [email], async (err, results) => {
         if (err) {
           console.error("Errore durante la query:", err);
@@ -207,6 +207,7 @@ class Customer {
                   surname: results[0].surname,
                   phone: results[0].phone,
                   email: results[0].mail,
+                  idStatus: results[0].idStatus,
                 };
 
                 return resolve(user);
@@ -413,6 +414,19 @@ class Customer {
           }
         }
       );
+    });
+  }
+
+  static async deleteAccount(db, userData) {
+    return new Promise((resolve, reject) => {
+      const query = `DELETE FROM customer WHERE idCustomer = ? AND mail = ?`;
+
+      db.query(query, [userData.id, userData.mail], (error, result) => {
+        if (error) {
+          reject(error);
+        }
+        resolve(result);
+      });
     });
   }
 

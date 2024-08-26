@@ -27,6 +27,21 @@ class Analytic {
     });
   }
 
+  static async getOrdersToSend(db) {
+    return new Promise((resolve, reject) => {
+      const query =
+        "SELECT COUNT(*) as OrdersToSend FROM orderdetails WHERE shippingLink IS NULL";
+      db.query(query, (err, results) => {
+        if (err) {
+          console.error("Errore durante la query:", err);
+          return reject("Errore interno del server");
+        } else {
+          return resolve(results);
+        }
+      });
+    });
+  }
+
   static async getUsersToVerify(db) {
     return new Promise((resolve, reject) => {
       const query =

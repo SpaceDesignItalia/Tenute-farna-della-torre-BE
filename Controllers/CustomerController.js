@@ -2,6 +2,7 @@ const Customer = require("../Models/CustomerModel");
 const {
   sendRecoverMail,
   sendDeleteAccount,
+  sendAccountCreationMail,
 } = require("../middlewares/MailSender");
 
 const otpGenerator = require("otp-generator");
@@ -131,6 +132,7 @@ const register = async (req, res, db) => {
     });
 
     // Restituisci lo stato 201 (Creato) e i dati dell'utente registrato
+    sendAccountCreationMail(newUser.mail, newUser.name, newUser.surname);
     return res.status(201).json({ newUser });
   } catch (error) {
     console.error("Errore durante la registrazione:", error);
@@ -419,7 +421,12 @@ const updateCustomerPasswordEmail = async (req, res, db) => {
 
 const DeleteAccount = async (req, res, db) => {
   try {
-    sendDeleteAccount("andrix.braia@gmail.com", "Andrea", "Braia");
+    const userData = req.query.userData;
+
+    await Customer.deleteAccount(db, userData);
+
+    sendDeleteAccount(userData.mail, userData.name, userData.surname);
+    return res.status(200).send("Account elimnato con successo");
   } catch (error) {
     console.error(
       "Errore durante l'aggiornamento della password del cliente:",

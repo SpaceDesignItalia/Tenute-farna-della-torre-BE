@@ -1,5 +1,22 @@
 const order = require("../Models/OrderModel.js");
 
+const setTrakingLink = async (req, res, db) => {
+  try {
+    const OrderId = req.body.orderId;
+    let ShippingLink = req.body.shippingLink;
+
+    if (ShippingLink == "") {
+      ShippingLink = null;
+    }
+
+    await order.setTrakingLink(db, ShippingLink, OrderId);
+    res.status(200).send("Aggiornato con successo");
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Errore nell'aggiunta del traking link");
+  }
+};
+
 const getAllOrders = async (req, res, db) => {
   try {
     const orders = await order.getAllOrders(db);
@@ -71,6 +88,7 @@ const getOrderDataByIdCustomerAndPaymentId = async (req, res, db) => {
 };
 
 module.exports = {
+  setTrakingLink,
   getAllOrders,
   getOrderById,
   getProductsByIdOrder,

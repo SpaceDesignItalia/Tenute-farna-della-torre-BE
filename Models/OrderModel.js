@@ -5,6 +5,24 @@ class Order {
     this.idPayment = idPayment;
   }
 
+  static async setTrakingLink(db, shippingLink, orderId) {
+    return new Promise((resolve, reject) => {
+      try {
+        const query = `UPDATE orderdetails SET shippingLink = ? WHERE idOrder = ?`;
+        db.query(query, [shippingLink, orderId], (err, result) => {
+          if (err) {
+            console.log(err);
+            return reject("Errore interno del server");
+          } else {
+            return resolve(result);
+          }
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    });
+  }
+
   static async getAllOrders(db) {
     return new Promise((resolve, reject) => {
       try {

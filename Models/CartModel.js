@@ -99,7 +99,7 @@ class Cart {
         LEFT JOIN productimage ON product.idProduct = productimage.idProduct
         LEFT JOIN productdiscount pd ON pd.idProduct = cart.idProduct
         LEFT JOIN discountcode dc ON dc.idDiscount = pd.idDiscount
-        WHERE cart.idCustomer = 1`;
+        WHERE cart.idCustomer = ?`;
 
         // Esegui la query
         db.query(selectQuery, [idCustomer], async (err, result) => {

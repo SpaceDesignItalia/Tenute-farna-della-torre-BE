@@ -4,6 +4,7 @@ const router = express.Router();
 const {
   getUsersNumber,
   getUsersToVerify,
+  getOrdersToSend,
   getStocksNumber,
 } = require("../Controllers/AnalyticController");
 
@@ -15,6 +16,10 @@ const analyticRoutes = (db) => {
 
   router.get("/GetStocksNumber", (req, res) => {
     getStocksNumber(res, db);
+  });
+
+  router.get("/GetOrdersToSend", (req, res) => {
+    getOrdersToSend(res, db);
   });
 
   router.get("/GetUsersToVerify", (req, res) => {
