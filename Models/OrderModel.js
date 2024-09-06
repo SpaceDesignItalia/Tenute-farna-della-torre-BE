@@ -7,7 +7,7 @@ class Order {
     this.idPayment = idPayment;
   }
 
-  static async setTrakingLink(db, shippingLink, orderId) {
+  static async setTrackingLink(db, shippingLink, orderId) {
     return new Promise((resolve, reject) => {
       try {
         const query = `UPDATE orderdetails SET shippingLink = ? WHERE idOrder = ?`;

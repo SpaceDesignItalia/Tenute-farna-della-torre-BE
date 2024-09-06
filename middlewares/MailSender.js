@@ -909,12 +909,13 @@ function sendDeleteAccount(mail, name, surname) {
 }
 
 function sendTrackingMail(idOrder, mail, name, surname, trackingLink) {
-  const sendTrackingMail = {
-    from: `Space Design Italia <${mail}>`,
-    to: mail,
-    subject: `Tracking Ordine #${idOrder} - Tenute Farina della torre`,
-    text: `Ciao ${surname} ${name}, il tuo ordine #${idOrder} è stato spedito. Puoi tracciare il tuo ordine cliccando sul seguente link: ${trackingLink}`,
-    html: `
+  if (trackingLink !== null) {
+    const sendTrackingMail = {
+      from: `Space Design Italia <${mail}>`,
+      to: mail,
+      subject: `Tracking Ordine #${idOrder} - Tenute Farina della torre`,
+      text: `Ciao ${surname} ${name}, il tuo ordine #${idOrder} è stato spedito. Puoi tracciare il tuo ordine cliccando sul seguente link: ${trackingLink}`,
+      html: `
                 <html>
                 <head>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -1006,13 +1007,14 @@ function sendTrackingMail(idOrder, mail, name, surname, trackingLink) {
                 </body>
                 </html>
             `,
-  };
-  transporter.sendMail(sendTrackingMail, (error, info) => {
-    if (error) {
-      return console.log(error);
-    }
-    console.log("Message sent: %s", info.messageId);
-  });
+    };
+    transporter.sendMail(sendTrackingMail, (error, info) => {
+      if (error) {
+        return console.log(error);
+      }
+      console.log("Message sent: %s", info.messageId);
+    });
+  }
 }
 module.exports = {
   sendAccountCreationMail,

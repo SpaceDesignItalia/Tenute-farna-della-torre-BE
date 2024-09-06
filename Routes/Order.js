@@ -4,18 +4,17 @@ const router = express.Router();
 const {
   getOrderDataByIdCustomerAndPaymentId,
   getAllOrders,
-  getAllOrdersData,
   getOrderById,
   getOrdersByIdCustomer,
   getProductsByIdOrder,
-  setTrakingLink,
+  setTrackingLink,
   deleteOrder,
 } = require("../Controllers/OrderController");
 const { updateShippingLink } = require("../Controllers/OrderController");
 
 const orderRoutes = (db) => {
-  router.put("/SetTrakingLink", (req, res) => {
-    setTrakingLink(req, res, db);
+  router.put("/SetTrackingLink", (req, res) => {
+    setTrackingLink(req, res, db);
   });
 
   router.get("/GetAllOrders", (req, res) => {
@@ -40,10 +39,6 @@ const orderRoutes = (db) => {
 
   router.get("/GetOrderDataByIdCustomerAndPaymentId", (req, res) => {
     getOrderDataByIdCustomerAndPaymentId(req, res, db);
-  });
-
-  router.put("/UpdateShippingLink", (req, res) => {
-    updateShippingLink(req, res, db);
   });
 
   return router;
