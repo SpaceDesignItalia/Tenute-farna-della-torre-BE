@@ -11,6 +11,7 @@ const {
   setTrakingLink,
   deleteOrder,
 } = require("../Controllers/OrderController");
+const { updateShippingLink } = require("../Controllers/OrderController");
 
 const orderRoutes = (db) => {
   router.put("/SetTrakingLink", (req, res) => {
@@ -39,6 +40,10 @@ const orderRoutes = (db) => {
 
   router.get("/GetOrderDataByIdCustomerAndPaymentId", (req, res) => {
     getOrderDataByIdCustomerAndPaymentId(req, res, db);
+  });
+
+  router.put("/UpdateShippingLink", (req, res) => {
+    updateShippingLink(req, res, db);
   });
 
   return router;

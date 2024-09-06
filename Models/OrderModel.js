@@ -1,3 +1,5 @@
+const { sendTrackingMail } = require("../middlewares/MailSender");
+
 class Order {
   constructor(idOrder, idCustomer, idPayment) {
     this.idOrder = idOrder;
@@ -103,6 +105,24 @@ class Order {
             return reject("Errore interno del server");
           } else {
             return resolve("Ordine eliminato correttamente");
+          }
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    });
+  }
+
+  static async updateShippingLink(db, idOrder, shippingLink) {
+    return new Promise((resolve, reject) => {
+      try {
+        const updateQuery = `UPDATE orderdetails SET shippingLink = ? WHERE idOrder = ?`;
+        db.query(updateQuery, [shippingLink, idOrder], (err, result) => {
+          if (err) {
+            console.log(err);
+            return reject("Errore interno del server");
+          } else {
+            return resolve("Tracking link aggiornato correttamente");
           }
         });
       } catch (error) {

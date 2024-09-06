@@ -908,8 +908,116 @@ function sendDeleteAccount(mail, name, surname) {
   });
 }
 
+function sendTrackingMail(idOrder, mail, name, surname, trackingLink) {
+  const sendTrackingMail = {
+    from: `Space Design Italia <${mail}>`,
+    to: mail,
+    subject: `Tracking Ordine #${idOrder} - Tenute Farina della torre`,
+    text: `Ciao ${surname} ${name}, il tuo ordine #${idOrder} è stato spedito. Puoi tracciare il tuo ordine cliccando sul seguente link: ${trackingLink}`,
+    html: `
+                <html>
+                <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+                <title>Tracking Ordine</title>
+                <style>
+                    body {
+                        background-color: #f4f4f4;
+                        font-family: Arial, sans-serif;
+                        font-size: 16px;
+                        margin: 0;
+                        padding: 0;
+                        color: #333333;
+                    }
+                    .container {
+                        max-width: 600px;
+                        margin: 40px auto;
+                        padding: 20px;
+                        background-color: #ffffff;
+                        border-radius: 8px;
+                        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                    }
+                    .header {
+                        text-align: center;
+                        padding: 10px 0;
+                        border-bottom: 2px solid #d0a46c;
+                    }
+                    h1 {
+                        font-size: 24px;
+                        color: #d0a46c;
+                        margin: 0;
+                    }
+                    .content {
+                        padding: 20px;
+                        color: #555555;
+                    }
+                    p {
+                        margin-bottom: 15px;
+                    }
+                    .btn {
+                        text-align: center;
+                        margin: 30px 0;
+                    }
+                    .btn a {
+                        background-color: #d0a46c;
+                        color: white;
+                        padding: 15px 30px;
+                        border-radius: 5px;
+                        text-decoration: none;
+                        font-size: 18px;
+                        font-weight: bold;
+                        display: inline-block;
+                    }
+                    .btn a:hover {
+                        background-color: #c0925f;
+                    }
+                    .footer {
+                        text-align: center;
+                        padding: 20px;
+                        font-size: 12px;
+                        color: #aaaaaa;
+                    }
+                    .footer a {
+                        color: #d0a46c;
+                        text-decoration: none;
+                    }
+                    .footer a:hover {
+                        color: #c0925f;
+                    }
+                </style>
+                </head>
+                <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Il tuo ordine è stato spedito!</h1>
+                    </div>
+                    <div class="content">
+                        <p>Ciao <strong>${surname} ${name}</strong>,</p>
+                        <p>Siamo felici di informarti che il tuo ordine <strong>#${idOrder}</strong> è in viaggio! Puoi tracciare la spedizione utilizzando il pulsante qui sotto:</p>
+                        <div class="btn">
+                            <a href="${trackingLink}" target="_blank">Traccia il tuo ordine</a>
+                        </div>
+                        <p>Grazie per aver scelto Tenute Farina della torre! Speriamo di rivederti presto.</p>
+                    </div>
+                    <div class="footer">
+                        <p>Inviato da <a href="https://www.tenutefarina.it">Tenute Farina della torre</a>.</p>
+                    </div>
+                </div>
+                </body>
+                </html>
+            `,
+  };
+  transporter.sendMail(sendTrackingMail, (error, info) => {
+    if (error) {
+      return console.log(error);
+    }
+    console.log("Message sent: %s", info.messageId);
+  });
+}
 module.exports = {
   sendAccountCreationMail,
   sendRecoverMail,
   sendDeleteAccount,
 };
+
+module.exports = { sendRecoverMail, sendDeleteAccount, sendTrackingMail };

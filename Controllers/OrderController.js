@@ -1,4 +1,5 @@
 const order = require("../Models/OrderModel.js");
+const { sendTrackingMail } = require("../middlewares/MailSender");
 
 const setTrakingLink = async (req, res, db) => {
   try {
@@ -87,6 +88,22 @@ const getOrderDataByIdCustomerAndPaymentId = async (req, res, db) => {
   }
 };
 
+const updateShippingLink = async (req, res, db) => {
+  try {
+    const idOrder = req.body.idOrder;
+    const shippingLink = req.body.shippingLink;
+    const mail = req.body.mail;
+    const name = req.body.name;
+    const surname = req.body.surname;
+    const message = await order.updateShippingLink(db, idOrder, shippingLink);
+    sendTrackingMail(idOrder, mail, name, surname, shippingLink);
+    res.status(200).send(message);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Error updating shipping link");
+  }
+};
+
 module.exports = {
   setTrakingLink,
   getAllOrders,
@@ -96,4 +113,5 @@ module.exports = {
   deleteOrder,
   getOrdersByIdCustomer,
   getOrderDataByIdCustomerAndPaymentId,
+  updateShippingLink,
 };

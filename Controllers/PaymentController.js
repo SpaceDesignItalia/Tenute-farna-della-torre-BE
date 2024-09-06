@@ -17,7 +17,7 @@ const getPaymentConfig = async (req, res) => {
 };
 
 const createCheckoutSession = async (req, res) => {
-  const { products, discount } = req.body;
+  const { products, discount, shippingCost } = req.body;
 
   try {
     // Calcola il totale dei prodotti senza sconto
@@ -38,19 +38,36 @@ const createCheckoutSession = async (req, res) => {
       }
     }
 
-    // Crea la sessione di pagamento Stripe
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card", "paypal"],
-      line_items: products.map((item) => ({
+    // Line items per i prodotti
+    const lineItems = products.map((item) => ({
+      price_data: {
+        currency: "eur",
+        product_data: {
+          name: item.productName,
+        },
+        unit_amount: item.cartPrice * 100,
+      },
+      quantity: item.amount,
+    }));
+
+    // Aggiungi il costo di spedizione come una voce separata
+    if (shippingCost && shippingCost > 0) {
+      lineItems.push({
         price_data: {
           currency: "eur",
           product_data: {
-            name: item.productName,
+            name: "Spese di spedizione",
           },
-          unit_amount: item.cartPrice * 100,
+          unit_amount: shippingCost * 100, // Trasformare in centesimi
         },
-        quantity: item.amount,
-      })),
+        quantity: 1,
+      });
+    }
+
+    // Crea la sessione di pagamento Stripe
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card", "paypal"],
+      line_items: lineItems, // Usa lineItems con i costi di spedizione
       mode: "payment",
       discounts:
         discountAmount > 0
